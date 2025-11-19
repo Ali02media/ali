@@ -13,6 +13,7 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: number;
+  image?: string;
 }
 
 export interface FeatureItem {

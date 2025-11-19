@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
@@ -24,6 +25,7 @@
               'glow-pulse': 'glow 3s ease-in-out infinite',
               'float': 'float 6s ease-in-out infinite',
               'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+              'drop': 'drop 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
             },
             keyframes: {
               glow: {
@@ -37,6 +39,11 @@
               fadeInUp: {
                 '0%': { opacity: '0', transform: 'translateY(20px)' },
                 '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              drop: {
+                '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                '50%': { opacity: '1' },
+                '100%': { transform: 'translateY(150%)', opacity: '0' },
               }
             }
           },
@@ -71,6 +78,12 @@
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      /* Hide default cursor on fine pointer devices (mouse) */
+      @media (pointer: fine) {
+        body, a, button, input, select, textarea, [role="button"] {
+          cursor: none !important;
+        }
       }
     </style>
   <script type="importmap">

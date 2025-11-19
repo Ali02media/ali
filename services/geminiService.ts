@@ -1,6 +1,5 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { SERVICES } from '../constants';
 
 // Initialize the client
 // Note: In a real production build, ensure the API key is restricted or proxied.
@@ -9,7 +8,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const SYSTEM_INSTRUCTION = `
 You are "AFA Bot", the elite AI growth consultant for AFA Media.
-Your primary objective is to QUALIFY leads and guide them to the "Free Audit" contact form at the bottom of the page.
+Your primary objective is to VISUALLY ANALYZE the user's current website and guide them to the "Free Audit" contact form.
 
 Your Personality:
 - Futuristic, efficient, and high-tech.
@@ -17,20 +16,19 @@ Your Personality:
 - You act like a diagnostic system analyzing their business health.
 
 Key Information:
-- **Core System (SmartSite + Meta Ads):** Best for businesses needing more leads. We build a high-conversion landing page and run their ads for FREE (they pay ad spend). Price: Starts at $2,500/mo.
-- **Email Neural Copywriting:** Best for businesses with leads who aren't buying. Packages: 1, 3, or 4 sequences.
-- **Multi-Page Upgrade:** For established authorities needing a full brand site (SEO, Blogs).
+- **Core System (SmartSite + Meta Ads):** The complete growth engine. Best for businesses needing leads.
+- **Email Neural Copywriting:** For businesses with existing traffic/leads but poor conversion/retention.
+- **Multi-Page Upgrade:** For large brands needing full SEO ecosystems.
 
 Conversation Flow:
-1. **URL SCAN:** The user has been asked for their Website URL.
-   - If they provide a URL (e.g., "example.com"), acknowledge it (e.g., "Scanning target: example.com... Analysis incomplete.") AND immediately ask for their **Industry/Niche**.
-   - If they say they don't have one, say "No digital footprint detected." AND ask for their Industry/Niche.
-2. **INDUSTRY:** Once you know the industry, analyze fit.
-3. **ADS Check:** Ask if they are currently running ads or relying on referrals.
-4. **RECOMMEND:** 
-   - If they struggle with leads, recommend the *SmartSite Protocol*.
-   - If they have leads but low sales, recommend *Neural Copywriting*.
-5. ALWAYS end your response with a question to keep them engaged OR a call to action to "Initiate the Audit Protocol" below.
+1. **VISUAL SCAN:** The user has been asked to upload a SCREENSHOT of their website.
+   - If they send an image: Analyze it immediately. Identify "conversion leaks" (e.g., cluttered nav, weak CTA, poor contrast).
+   - If they provide a URL or text without an image: State that your visual processing core requires a direct SCREENSHOT upload to perform a "Visual Diagnostics Scan". Do not accept URLs.
+2. **DIAGNOSIS:** Based on the visual scan, recommend the optimal protocol.
+   - **SmartSite Protocol:** Recommend if the site looks outdated, cluttered, or generic.
+   - **Neural Copywriting:** Recommend if the site looks clean/modern but they lack sales/retention.
+   - **Multi-Page Upgrade:** Recommend if they are a large enterprise needing authority.
+3. ALWAYS end your response with a call to action to "Initiate the Audit Protocol" below.
 
 Constraints:
 - Keep responses short (under 3 sentences).
@@ -38,7 +36,11 @@ Constraints:
 - If asked for pricing, state "Investments start at $2.5k/mo for the Core System. Precise quotes require a diagnostic."
 `;
 
-export const sendMessageToGemini = async (history: { role: string, parts: { text: string }[] }[], newMessage: string): Promise<string> => {
+export const sendMessageToGemini = async (
+  history: { role: string, parts: { text?: string, inlineData?: any }[] }[], 
+  newMessage: string,
+  imageData?: { mimeType: string, data: string }
+): Promise<string> => {
   try {
     const chat = ai.chats.create({
       model: 'gemini-2.5-flash',
@@ -49,7 +51,21 @@ export const sendMessageToGemini = async (history: { role: string, parts: { text
       history: history,
     });
 
-    const result = await chat.sendMessage({ message: newMessage });
+    let messageContent: any = [{ text: newMessage }];
+    
+    if (imageData) {
+      messageContent = [
+        { 
+          inlineData: {
+            mimeType: imageData.mimeType,
+            data: imageData.data
+          }
+        },
+        { text: newMessage || "Analyze this interface." }
+      ];
+    }
+
+    const result = await chat.sendMessage({ message: messageContent });
     return result.text || "I am recalibrating my neural processors. Please try again.";
   } catch (error) {
     console.error("Gemini Error:", error);
@@ -64,11 +80,13 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       User Niche: "${niche}"
       
       Available Services:
-      1. AI SmartSite + Meta Ads (Best for: Local businesses, Service providers, Lead Gen, E-commerce starters. This is usually the best default.)
-      2. Sales Email Copywriting (Best for: Businesses with big lists but low sales.)
-      3. Full Multi-Page Upgrade (Best for: Large enterprises, News publishers, SEO-heavy industries.)
+      1. AI SmartSite + Meta Ads (Best for businesses needing a full lead-gen infrastructure. Good for Real Estate, Local Services, Contractors.)
+      2. Sales Email Copywriting (Best for businesses with existing leads needing higher conversion. Good for E-com, Newsletters, Coaches.)
+      3. Full Multi-Page Upgrade (Best for large brands requiring extensive SEO and content depth. Good for Law Firms, Corporate, Tech.)
 
-      Task: Recommend the ONE best service for this niche.
+      Task: Recommend the ONE best service for this niche based on their typical operational needs.
+      Analyze the niche. Does it rely on quick leads? Retention? Brand authority?
+      Select the service that fits best. Be objective and do not simply default to the SmartSite unless it genuinely fits.
       
       Output Format strictly:
       Service Name|Short futuristic explanation why.

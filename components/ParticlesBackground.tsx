@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 
 const ParticlesBackground: React.FC = () => {
@@ -17,8 +18,11 @@ const ParticlesBackground: React.FC = () => {
     canvas.height = height;
 
     const particles: { x: number; y: number; vx: number; vy: number; size: number }[] = [];
-    const PARTICLE_COUNT = 70;
-    const CONNECTION_DISTANCE = 150;
+    
+    // Reduce particle count on mobile for better performance
+    const isMobile = width < 768;
+    const PARTICLE_COUNT = isMobile ? 30 : 70;
+    const CONNECTION_DISTANCE = isMobile ? 100 : 150;
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({

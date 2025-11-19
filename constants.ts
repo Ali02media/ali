@@ -1,7 +1,11 @@
+
 import { Brain, Zap, Layout, Mail, Globe, Target } from 'lucide-react';
 import { ServicePackage, FeatureItem } from './types';
 
 export const APP_NAME = "AFA MEDIA";
+
+// Replaced placeholder with actual Google Apps Script Deployment URL
+export const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzhCMMOtnurPrUajMvAki7-Bab4QZWomRliH00CS50ozib-9hWdwu3p95rh6eS7DKws7w/exec";
 
 export const SERVICES: ServicePackage[] = [
   {
@@ -20,13 +24,13 @@ export const SERVICES: ServicePackage[] = [
   },
   {
     id: 'addon',
-    title: 'Sales Email Copywriting',
-    description: 'Turn cold leads into hot prospects with psychology-backed email sequences.',
+    title: 'Neural Sales Funnels',
+    description: 'Architected email sequences designed to psychologically guide leads from curiosity to conversion.',
     features: [
-      '5-Email Welcome Sequence',
-      'Abandoned Cart Recovery',
-      'Weekly Newsletter Content',
-      'A/B Tested Subject Lines'
+      'High-Impact Single Blasts',
+      '3-Step Nurture Loops',
+      '4-Day Cash Injection Campaigns',
+      'Psychological Triggers'
     ],
     highlight: false
   },
