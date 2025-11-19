@@ -7,7 +7,7 @@ import { ChatMessage } from '../types';
 const AIChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', text: 'System Online. I am AFA Bot. To begin your growth diagnostic, what industry are you operating in?', timestamp: Date.now() }
+    { role: 'model', text: 'System Online. I am AFA Bot. To initiate the audit protocol, please enter your **Website URL**.', timestamp: Date.now() }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
