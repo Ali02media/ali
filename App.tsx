@@ -7,7 +7,6 @@ import Button from './components/Button';
 import ServiceModal from './components/ServiceModal';
 import AIRecommender from './components/AIRecommender';
 import ScrollReveal from './components/ScrollReveal';
-import Logo from './components/Logo';
 import { SERVICES, PAIN_POINTS, SOLUTIONS, APP_NAME } from './constants';
 
 const App: React.FC = () => {
@@ -47,8 +46,12 @@ const App: React.FC = () => {
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-gray-800 py-2' : 'bg-transparent border-transparent py-4'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center">
-            <Logo className="h-12 w-auto" />
+          <div className="flex items-center gap-2">
+             {/* Text Logo */}
+             <div className="w-8 h-8 bg-neon-blue/10 border border-neon-blue/50 rounded-lg flex items-center justify-center">
+                <span className="font-bold text-neon-blue">A</span>
+             </div>
+             <span className="text-xl font-bold tracking-wider font-mono text-white">AFA MEDIA</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-mono text-gray-400">
             <a href="#problem" className="hover:text-neon-blue transition-colors">THE PROBLEM</a>
