@@ -127,12 +127,13 @@ const App: React.FC = () => {
       }
 
       // Create FormData for Google Apps Script (no-cors compatible)
+      // We explicitly handle optional fields to ensure they are sent as empty strings if undefined
       const data = new FormData();
-      data.append('name', formData.name);
-      data.append('email', formData.email);
-      data.append('phone', formData.phone);
-      data.append('url', formData.url);
-      data.append('message', formData.message);
+      data.append('name', formData.name.trim());
+      data.append('email', formData.email.trim());
+      data.append('phone', formData.phone ? formData.phone.trim() : '');
+      data.append('url', formData.url ? formData.url.trim() : '');
+      data.append('message', formData.message ? formData.message.trim() : '');
 
       await fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
         method: 'POST',
@@ -187,7 +188,7 @@ const App: React.FC = () => {
       <nav className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-gray-800 py-2' : 'bg-transparent border-transparent py-4'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2 relative z-50">
-             <Logo className="h-12 md:h-16 w-auto" />
+             <Logo className="h-20 md:h-32 w-auto" />
           </div>
 
           {/* Desktop Menu */}
@@ -487,7 +488,7 @@ const App: React.FC = () => {
                 <input 
                   type="url" 
                   name="url"
-                  placeholder="Current Website" 
+                  placeholder="Current Website (e.g. https://your-site.com)" 
                   value={formData.url}
                   onChange={handleInputChange}
                   onBlur={handleBlur}

@@ -5,7 +5,7 @@ import { ServicePackage, FeatureItem } from './types';
 export const APP_NAME = "AFA MEDIA";
 
 // Replaced placeholder with actual Google Apps Script Deployment URL
-export const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzhCMMOtnurPrUajMvAki7-Bab4QZWomRliH00CS50ozib-9hWdwu3p95rh6eS7DKws7w/exec";
+export const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzIevFO7jr2wqmc1jm_-lITVmVa5dPGFOhL8tdt3J6LcFhBpCC7if07bl8jq28nQSarUA/exec";
 
 export const SERVICES: ServicePackage[] = [
   {
