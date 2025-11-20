@@ -6,8 +6,8 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = "h-16" }) => {
-  // Direct link to the image on Google Drive
-  const logoUrl = "https://drive.google.com/uc?export=view&id=1T1jN1LZ_l65dvEYlSQEwbiPEdLhwntbp";
+  // Updated with your ImageKit URL
+  const logoUrl = "https://ik.imagekit.io/hxkb52bem/afa%20media%20logo%20no%20BG.png";
 
   return (
     <img 

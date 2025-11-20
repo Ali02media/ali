@@ -185,11 +185,20 @@ const AIChatWidget: React.FC = () => {
                 </div>
               </div>
             ))}
+            
+            {/* Animated Typing/Processing Indicator */}
             {loading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-800/50 p-3 rounded-xl flex items-center gap-2">
-                   <Loader2 size={16} className="animate-spin text-neon-blue" />
-                   <span className="text-xs text-gray-400">Processing...</span>
+              <div className="flex justify-start animate-fade-in-up">
+                <div className="bg-gray-800/50 border border-gray-700 p-3 rounded-xl rounded-tl-none flex items-center gap-3 shadow-[0_0_10px_rgba(0,243,255,0.05)]">
+                   <Bot size={16} className="text-neon-blue animate-pulse" />
+                   <div className="flex flex-col gap-1">
+                     <div className="flex gap-1 h-2 items-center mt-1">
+                        <div className="w-1.5 h-1.5 bg-neon-blue/80 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="w-1.5 h-1.5 bg-neon-blue/80 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="w-1.5 h-1.5 bg-neon-blue/80 rounded-full animate-bounce" />
+                     </div>
+                     <span className="text-[9px] text-neon-blue/50 font-mono uppercase tracking-widest animate-pulse">Analyzing...</span>
+                   </div>
                 </div>
               </div>
             )}

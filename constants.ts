@@ -11,7 +11,7 @@ export const SERVICES: ServicePackage[] = [
   {
     id: 'core',
     title: 'AI SmartSite + Meta Ads',
-    description: 'The ultimate lead generation engine. A high-conversion landing page coupled with AI-optimized traffic.',
+    description: 'The sovereign growth engine. A hyper-optimized conversion terminal fused with algorithmic traffic acquisition. We don\'t just get leads; we engineer market dominance.',
     features: [
       'Conversion-Focused "SmartSite"',
       'AI-Driven Meta Ad Campaigns',
@@ -25,7 +25,7 @@ export const SERVICES: ServicePackage[] = [
   {
     id: 'addon',
     title: 'Neural Sales Funnels',
-    description: 'Architected email sequences designed to psychologically guide leads from curiosity to conversion.',
+    description: 'Psych-ops for your revenue stream. Automated, psychology-backed transmission sequences designed to rewrite lead behavior and trigger high-velocity purchasing decisions.',
     features: [
       'High-Impact Single Blasts',
       '3-Step Nurture Loops',
@@ -37,7 +37,7 @@ export const SERVICES: ServicePackage[] = [
   {
     id: 'upgrade',
     title: 'Full Multi-Page Upgrade',
-    description: 'Expand your digital footprint with a complete, SEO-optimized brand website.',
+    description: 'Total digital sovereignty. A vast, SEO-fortified ecosystem designed for maximum authority. Dominate search indices and establish an unshakeable brand presence.',
     features: [
       '5+ Custom Pages',
       'Advanced SEO Setup',

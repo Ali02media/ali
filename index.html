@@ -26,11 +26,16 @@
               'float': 'float 6s ease-in-out infinite',
               'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
               'drop': 'drop 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+              'button-pulse': 'buttonPulse 2s infinite',
             },
             keyframes: {
               glow: {
                 '0%, 100%': { opacity: 0.8, boxShadow: '0 0 10px #00f3ff' },
                 '50%': { opacity: 0.4, boxShadow: '0 0 20px #00f3ff' },
+              },
+              buttonPulse: {
+                '0%, 100%': { boxShadow: '0 0 15px rgba(0, 243, 255, 0.3)' },
+                '50%': { boxShadow: '0 0 35px rgba(0, 243, 255, 0.7)' },
               },
               float: {
                 '0%, 100%': { transform: 'translateY(0)' },

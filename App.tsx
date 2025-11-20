@@ -10,6 +10,7 @@ import ScrollReveal from './components/ScrollReveal';
 import CustomCursor from './components/CustomCursor';
 import ProcessTimeline from './components/ProcessTimeline';
 import ThankYouModal from './components/ThankYouModal';
+import Logo from './components/Logo';
 import { SERVICES, PAIN_POINTS, SOLUTIONS, APP_NAME, GOOGLE_SHEETS_WEBHOOK_URL } from './constants';
 
 const App: React.FC = () => {
@@ -21,6 +22,8 @@ const App: React.FC = () => {
   // Form State
   const [formData, setFormData] = useState({ name: '', email: '', url: '', phone: '', message: '' });
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -42,13 +45,71 @@ const App: React.FC = () => {
     setActiveModal(id);
   };
 
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'name':
+        if (!value.trim()) return 'Identity verification required.';
+        break;
+      case 'email':
+        if (!value.trim()) return 'Communication channel required.';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Invalid frequency format.';
+        break;
+      case 'url':
+        if (value.trim() && !/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(value)) {
+          return 'Invalid domain syntax.';
+        }
+        break;
+    }
+    return '';
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Real-time validation if field has been touched or already has an error
+    if (touched[name] || formErrors[name]) {
+      const error = validateField(name, value);
+      setFormErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFormErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) return;
+    
+    // Validate all fields
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    // Validate Name and Email (Required)
+    ['name', 'email'].forEach(field => {
+      const error = validateField(field, formData[field as keyof typeof formData]);
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
+    // Validate URL (Optional but format check)
+    if (formData.url) {
+      const error = validateField('url', formData.url);
+      if (error) {
+        newErrors.url = error;
+        isValid = false;
+      }
+    }
+
+    setFormErrors(newErrors);
+    setTouched({ name: true, email: true, url: true, phone: true, message: true });
+
+    if (!isValid) return;
     
     setFormStatus('submitting');
 
@@ -61,6 +122,7 @@ const App: React.FC = () => {
         setFormStatus('success');
         setShowThankYou(true); // Trigger Modal
         setFormData({ name: '', email: '', url: '', phone: '', message: '' });
+        setTouched({});
         return;
       }
 
@@ -81,6 +143,7 @@ const App: React.FC = () => {
       setFormStatus('success');
       setShowThankYou(true); // Trigger Modal
       setFormData({ name: '', email: '', url: '', phone: '', message: '' });
+      setTouched({});
     } catch (error) {
       console.error("Submission Error:", error);
       setFormStatus('error');
@@ -98,6 +161,13 @@ const App: React.FC = () => {
     SERVICES.find(s => s.id === 'core'),
     SERVICES.find(s => s.id === 'upgrade')
   ].filter(Boolean) as typeof SERVICES;
+
+  const getInputClass = (fieldName: string) => `
+    w-full bg-gray-900/50 border rounded-lg p-4 text-white outline-none transition-all disabled:opacity-50
+    ${formErrors[fieldName] 
+      ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' 
+      : 'border-gray-800 focus:border-neon-blue focus:ring-1 focus:ring-neon-blue'}
+  `;
 
   return (
     <div className="relative min-h-screen text-white font-sans selection:bg-neon-blue selection:text-black">
@@ -117,8 +187,7 @@ const App: React.FC = () => {
       <nav className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-gray-800 py-2' : 'bg-transparent border-transparent py-4'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2 relative z-50">
-             {/* Text Only Branding */}
-             <span className="text-xl font-bold tracking-wider font-mono text-white">AFA MEDIA</span>
+             <Logo className="h-12 md:h-16 w-auto" />
           </div>
 
           {/* Desktop Menu */}
@@ -161,7 +230,7 @@ const App: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto justify-center animate-fade-in-up [animation-delay:600ms] opacity-0 px-6">
-          <Button onClick={scrollToContact} className="w-full sm:w-auto justify-center">
+          <Button onClick={scrollToContact} className="w-full sm:w-auto justify-center animate-button-pulse hover:animate-none">
             Get Free AI Audit
           </Button>
           <Button variant="outline" onClick={() => document.getElementById('services')?.scrollIntoView({behavior: 'smooth'})} icon={false} className="w-full sm:w-auto justify-center">
@@ -358,7 +427,7 @@ const App: React.FC = () => {
             </p>
           </ScrollReveal>
 
-          <form className="max-w-md mx-auto space-y-4 text-left" onSubmit={handleSubmit}>
+          <form className="max-w-md mx-auto space-y-4 text-left" onSubmit={handleSubmit} noValidate>
             <ScrollReveal delay={200}>
               <div>
                 <label className="block text-xs font-mono text-gray-500 mb-2 uppercase">Identification</label>
@@ -368,10 +437,13 @@ const App: React.FC = () => {
                   placeholder="Name" 
                   value={formData.name}
                   onChange={handleInputChange}
-                  required
+                  onBlur={handleBlur}
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-white focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all disabled:opacity-50" 
+                  className={getInputClass('name')}
                 />
+                {formErrors.name && (
+                  <p className="text-red-500 text-xs mt-1 font-mono tracking-wide animate-pulse">{formErrors.name}</p>
+                )}
               </div>
             </ScrollReveal>
             <ScrollReveal delay={300}>
@@ -383,10 +455,13 @@ const App: React.FC = () => {
                   placeholder="Email Address" 
                   value={formData.email}
                   onChange={handleInputChange}
-                  required
+                  onBlur={handleBlur}
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-white focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all disabled:opacity-50" 
+                  className={getInputClass('email')}
                 />
+                {formErrors.email && (
+                  <p className="text-red-500 text-xs mt-1 font-mono tracking-wide animate-pulse">{formErrors.email}</p>
+                )}
               </div>
             </ScrollReveal>
 
@@ -399,8 +474,9 @@ const App: React.FC = () => {
                   placeholder="Phone Number (Optional)" 
                   value={formData.phone}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-white focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all disabled:opacity-50" 
+                  className={getInputClass('phone')}
                 />
               </div>
             </ScrollReveal>
@@ -414,9 +490,13 @@ const App: React.FC = () => {
                   placeholder="Current Website" 
                   value={formData.url}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-white focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all disabled:opacity-50" 
+                  className={getInputClass('url')}
                 />
+                {formErrors.url && (
+                  <p className="text-red-500 text-xs mt-1 font-mono tracking-wide animate-pulse">{formErrors.url}</p>
+                )}
               </div>
             </ScrollReveal>
 
@@ -428,9 +508,10 @@ const App: React.FC = () => {
                   placeholder="Tell us about your project (Optional)" 
                   value={formData.message}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   rows={4}
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
-                  className="w-full bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-white focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all disabled:opacity-50 resize-none" 
+                  className={getInputClass('message').replace('h-full', '') + ' resize-none'}
                 />
               </div>
             </ScrollReveal>
