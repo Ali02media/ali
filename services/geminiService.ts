@@ -1,18 +1,23 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the client
-// Safely retrieve API key to prevent runtime crashes if process is undefined in the browser
-const getApiKey = () => {
+// Helper to initialize the client only when needed (Lazy Loading)
+// This prevents the "Black Screen" crash if the API Key is missing on site load.
+const getGenAIClient = () => {
+  let apiKey = "";
   try {
-    return process.env.API_KEY;
+    // process.env.API_KEY is replaced by Vite at build time
+    apiKey = process.env.API_KEY || "";
   } catch (e) {
-    console.warn("API Key environment variable not accessible.");
-    return "";
+    console.warn("Environment variable access failed");
   }
-};
 
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
+  if (!apiKey) {
+    throw new Error("API Key is missing. Please check your Netlify environment variables.");
+  }
+
+  return new GoogleGenAI({ apiKey: apiKey });
+};
 
 const SYSTEM_INSTRUCTION = `
 You are "AFA Bot", the elite AI growth consultant for AFA Media.
@@ -50,6 +55,9 @@ export const sendMessageToGemini = async (
   imageData?: { mimeType: string, data: string }
 ): Promise<string> => {
   try {
+    // Initialize AI here, not at top level
+    const ai = getGenAIClient();
+    
     const chat = ai.chats.create({
       model: 'gemini-2.5-flash',
       config: {
@@ -77,12 +85,15 @@ export const sendMessageToGemini = async (
     return result.text || "I am recalibrating my neural processors. Please try again.";
   } catch (error) {
     console.error("Gemini Error:", error);
-    return "Connection to the mainframe interrupted. Please check your network or API key.";
+    return "System Alert: Unable to connect to AI mainframe. Please check API Key configuration.";
   }
 };
 
 export const getServiceRecommendation = async (niche: string): Promise<{ service: string; reason: string }> => {
   try {
+    // Initialize AI here, not at top level
+    const ai = getGenAIClient();
+
     const prompt = `
       Context: You are the AI intake system for AFA Media.
       User Niche: "${niche}"
