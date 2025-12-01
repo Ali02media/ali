@@ -40,10 +40,10 @@ export const SERVICES: ServicePackage[] = [
     description: 'Total digital sovereignty. A vast, SEO-fortified ecosystem designed for maximum authority. Dominate search indices and establish an unshakeable brand presence.',
     features: [
       '5+ Custom Pages',
+      'Custom AI Chatbot',
       'Advanced SEO Setup',
       'Blog/Content Hub',
-      'CMS Integration',
-      'Custom Animations'
+      'CMS Integration'
     ],
     highlight: false
   }

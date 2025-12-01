@@ -2,9 +2,17 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Initialize the client
-// Note: In a real production build, ensure the API key is restricted or proxied.
-// For this demo, we use the process.env as requested.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Safely retrieve API key to prevent runtime crashes if process is undefined in the browser
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY;
+  } catch (e) {
+    console.warn("API Key environment variable not accessible.");
+    return "";
+  }
+};
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 const SYSTEM_INSTRUCTION = `
 You are "AFA Bot", the elite AI growth consultant for AFA Media.

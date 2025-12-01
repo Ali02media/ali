@@ -56,9 +56,11 @@ const ProcessTimeline: React.FC = () => {
 
               {/* Center Node */}
               <div className="absolute left-[20px] md:left-1/2 -translate-x-1/2 flex items-center justify-center">
-                <div className={`w-4 h-4 rounded-full border-2 border-black z-10 ${step.highlight ? 'bg-neon-blue shadow-[0_0_15px_#00f3ff]' : 'bg-gray-800 border-gray-600'}`}>
-                  {step.highlight && <div className="absolute inset-0 w-full h-full rounded-full bg-neon-blue animate-ping opacity-50" />}
-                </div>
+                <ScrollReveal delay={index * 100 + 50}>
+                  <div className={`w-4 h-4 rounded-full border-2 border-black z-10 ${step.highlight ? 'bg-neon-blue shadow-[0_0_15px_#00f3ff]' : 'bg-gray-800 border-gray-600'}`}>
+                    {step.highlight && <div className="absolute inset-0 w-full h-full rounded-full bg-neon-blue animate-ping opacity-50" />}
+                  </div>
+                </ScrollReveal>
               </div>
 
               {/* Spacer for the other side */}

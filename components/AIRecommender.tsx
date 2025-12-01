@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, Target } from 'lucide-react';
+import { Sparkles, Target } from 'lucide-react';
 import { getServiceRecommendation } from '../services/geminiService';
 import Button from './Button';
+import LoadingSpinner from './LoadingSpinner';
 
 const AIRecommender: React.FC = () => {
   const [niche, setNiche] = useState('');
@@ -44,7 +45,7 @@ const AIRecommender: React.FC = () => {
               className="flex-1 bg-gray-900/80 border border-gray-700 text-white px-6 py-4 rounded-xl focus:border-neon-blue focus:ring-1 focus:ring-neon-blue outline-none transition-all placeholder-gray-600"
             />
             <Button onClick={handleAnalyze} disabled={loading} className="min-w-[140px] justify-center">
-              {loading ? <Loader2 className="animate-spin" size={20} /> : 'Analyze'}
+              {loading ? <LoadingSpinner size={20} /> : 'Analyze'}
             </Button>
           </div>
 

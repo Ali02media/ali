@@ -109,12 +109,16 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
               <h3 className="text-lg md:text-xl font-bold font-mono uppercase tracking-widest">Upgrade: Full Brand Architecture</h3>
             </div>
              <p className="text-gray-300 leading-relaxed text-sm">
-               Expand beyond a landing page. We build a complete, multi-page digital ecosystem for established authorities.
+               Expand beyond a landing page. We build a complete, multi-page digital ecosystem for established authorities, featuring a fully integrated <strong>Custom AI Chatbot</strong>.
              </p>
              <ul className="space-y-3 bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-800">
                 <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
                   <span>5+ Custom Designed Pages</span>
+                </li>
+                <li className="flex gap-3 text-gray-300 text-sm">
+                  <CheckCircle2 className="text-white min-w-[16px]" size={16} />
+                  <span>Custom AI Chatbot Integration</span>
                 </li>
                 <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
@@ -167,3 +171,4 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
 };
 
 export default ServiceModal;
+    

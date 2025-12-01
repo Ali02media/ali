@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X, Loader2 } from 'lucide-react';
+import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X } from 'lucide-react';
 import ParticlesBackground from './components/ParticlesBackground';
 import AIChatWidget from './components/AIChatWidget';
 import Button from './components/Button';
@@ -11,7 +11,8 @@ import CustomCursor from './components/CustomCursor';
 import ProcessTimeline from './components/ProcessTimeline';
 import ThankYouModal from './components/ThankYouModal';
 import Logo from './components/Logo';
-import { SERVICES, PAIN_POINTS, SOLUTIONS, APP_NAME, GOOGLE_SHEETS_WEBHOOK_URL } from './constants';
+import LoadingSpinner from './components/LoadingSpinner';
+import { SERVICES, PAIN_POINTS, SOLUTIONS, GOOGLE_SHEETS_WEBHOOK_URL } from './constants';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -59,6 +60,11 @@ const App: React.FC = () => {
           return 'Invalid domain syntax.';
         }
         break;
+      case 'phone':
+        if (value.trim() && !/^[+]?[\d\s-()]{7,}$/.test(value.trim())) {
+           return 'Invalid signal coordinates.';
+        }
+        break;
     }
     return '';
   };
@@ -102,6 +108,15 @@ const App: React.FC = () => {
       const error = validateField('url', formData.url);
       if (error) {
         newErrors.url = error;
+        isValid = false;
+      }
+    }
+
+    // Validate Phone (Optional but format check)
+    if (formData.phone) {
+      const error = validateField('phone', formData.phone);
+      if (error) {
+        newErrors.phone = error;
         isValid = false;
       }
     }
@@ -159,8 +174,8 @@ const App: React.FC = () => {
   // Reorder services for podium effect: Addon (Left), Core (Center/Top), Upgrade (Right)
   const podiumServices = [
     SERVICES.find(s => s.id === 'addon'),
-    SERVICES.find(s => s.id === 'core'),
-    SERVICES.find(s => s.id === 'upgrade')
+    SERVICES.find(s => s.id === 'upgrade'), // Upgrade in middle
+    SERVICES.find(s => s.id === 'core')     // Core on right
   ].filter(Boolean) as typeof SERVICES;
 
   const getInputClass = (fieldName: string) => `
@@ -185,7 +200,7 @@ const App: React.FC = () => {
       />
       
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-gray-800 py-2' : 'bg-transparent border-transparent py-4'}`}>
+      <nav className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-gray-800 py-1' : 'bg-transparent border-transparent py-2'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2 relative z-50">
              <Logo className="h-20 md:h-32 w-auto" />
@@ -271,23 +286,25 @@ const App: React.FC = () => {
       </section>
 
       {/* Animated Transition Divider */}
-      <div className="relative h-32 bg-gradient-to-b from-black to-gray-900 flex flex-col items-center justify-center overflow-hidden z-10">
-         {/* Vertical Line with Data Drop */}
-         <div className="absolute inset-y-0 w-px bg-gray-800/50">
-            <div className="w-full h-1/2 bg-gradient-to-b from-transparent via-neon-blue to-transparent animate-drop shadow-[0_0_10px_#00f3ff]" />
-         </div>
-         
-         {/* Central Processing Node */}
-         <div className="relative z-10 bg-black border border-gray-800 rounded-full p-3 shadow-[0_0_20px_rgba(0,243,255,0.15)] group cursor-default transition-transform hover:scale-110">
-            <div className="w-2 h-2 bg-neon-blue rounded-full animate-pulse shadow-[0_0_10px_#00f3ff]" />
-            <div className="absolute inset-0 rounded-full border border-neon-blue opacity-20 animate-ping" />
-         </div>
+      <ScrollReveal className="w-full z-10">
+        <div className="relative h-32 bg-gradient-to-b from-black to-gray-900 flex flex-col items-center justify-center overflow-hidden">
+           {/* Vertical Line with Data Drop */}
+           <div className="absolute inset-y-0 w-px bg-gray-800/50">
+              <div className="w-full h-1/2 bg-gradient-to-b from-transparent via-neon-blue to-transparent animate-drop shadow-[0_0_10px_#00f3ff]" />
+           </div>
+           
+           {/* Central Processing Node */}
+           <div className="relative z-10 bg-black border border-gray-800 rounded-full p-3 shadow-[0_0_20px_rgba(0,243,255,0.15)] group cursor-default transition-transform hover:scale-110">
+              <div className="w-2 h-2 bg-neon-blue rounded-full animate-pulse shadow-[0_0_10px_#00f3ff]" />
+              <div className="absolute inset-0 rounded-full border border-neon-blue opacity-20 animate-ping" />
+           </div>
 
-         {/* Text Indicator */}
-         <div className="absolute bottom-6 text-[10px] font-mono text-gray-600 tracking-[0.3em] uppercase opacity-70">
-             System_Initialization
-         </div>
-      </div>
+           {/* Text Indicator */}
+           <div className="absolute bottom-6 text-[10px] font-mono text-gray-600 tracking-[0.3em] uppercase opacity-70">
+               System_Initialization
+           </div>
+        </div>
+      </ScrollReveal>
 
       {/* Solution / Process Section */}
       <section id="process" className="py-16 md:py-24 relative bg-gradient-to-b from-gray-900 to-black">
@@ -340,20 +357,22 @@ const App: React.FC = () => {
           </ScrollReveal>
 
           {/* AI Recommender Integration */}
-          <AIRecommender />
+          <ScrollReveal className="w-full mb-12">
+             <AIRecommender />
+          </ScrollReveal>
 
           {/* Podium Grid Layout */}
           <div className="grid md:grid-cols-3 gap-6 items-center justify-center pt-0 md:pt-10">
             {podiumServices.map((service, i) => {
-              const isCore = service.id === 'core';
+              const isCenter = i === 1; // Middle element is now "Full Multi-Page Upgrade"
               
               return (
-                <ScrollReveal key={service.id} delay={i * 200} className={isCore ? 'z-20 order-first md:order-none' : ''}>
+                <ScrollReveal key={service.id} delay={i * 200} className={isCenter ? 'z-20 order-first md:order-none' : ''}>
                   <div 
                     onClick={() => handleServiceClick(service.id)}
                     className={`
                       group relative flex flex-col p-6 md:p-8 rounded-3xl border transition-all duration-500 cursor-pointer overflow-hidden
-                      ${isCore 
+                      ${isCenter 
                         ? 'md:scale-110 z-20 bg-gray-900/80 border-neon-blue shadow-[0_0_40px_rgba(0,243,255,0.2)] h-full min-h-[500px] md:min-h-[600px]' 
                         : 'bg-black/40 border-gray-800 hover:border-neon-blue/50 h-full min-h-[400px] md:min-h-[500px]'
                       }
@@ -367,7 +386,7 @@ const App: React.FC = () => {
                       <div className="flex justify-between items-start mb-6">
                         <div className={`
                           w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center border transition-colors
-                          ${isCore 
+                          ${isCenter 
                             ? 'bg-neon-blue/10 border-neon-blue text-neon-blue' 
                             : 'bg-gray-900 border-gray-800 text-gray-400'
                           }
@@ -375,7 +394,7 @@ const App: React.FC = () => {
                         `}>
                           <Sparkles size={20} />
                         </div>
-                        {isCore && (
+                        {isCenter && (
                           <span className="bg-neon-blue text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                             Most Popular
                           </span>
@@ -385,27 +404,27 @@ const App: React.FC = () => {
                       <h3 className="text-xl md:text-2xl font-bold mb-2 transition-colors text-white group-hover:text-neon-blue">
                         {service.title}
                       </h3>
-                      <p className={`text-xs md:text-sm mb-6 md:mb-8 leading-relaxed transition-colors ${isCore ? 'text-gray-300' : 'text-gray-400'} group-hover:text-gray-200`}>
+                      <p className={`text-xs md:text-sm mb-6 md:mb-8 leading-relaxed transition-colors ${isCenter ? 'text-gray-300' : 'text-gray-400'} group-hover:text-gray-200`}>
                         {service.description}
                       </p>
                       
                       {/* Features */}
                       <ul className="space-y-3 md:space-y-4 mb-8 flex-1">
                         {service.features.slice(0, 4).map((feat, idx) => (
-                          <li key={idx} className={`flex items-start gap-3 text-xs md:text-sm transition-colors ${isCore ? 'text-gray-300' : 'text-gray-400'} group-hover:text-white`}>
-                            <CheckCircle2 size={16} className={`mt-0.5 transition-colors ${isCore ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
+                          <li key={idx} className={`flex items-start gap-3 text-xs md:text-sm transition-colors ${isCenter ? 'text-gray-300' : 'text-gray-400'} group-hover:text-white`}>
+                            <CheckCircle2 size={16} className={`mt-0.5 transition-colors ${isCenter ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
                             <span>{feat}</span>
                           </li>
                         ))}
                       </ul>
 
                       {/* Call to Action */}
-                      <div className={`pt-6 border-t transition-colors ${isCore ? 'border-gray-700' : 'border-gray-800'} group-hover:border-neon-blue/30`}>
+                      <div className={`pt-6 border-t transition-colors ${isCenter ? 'border-gray-700' : 'border-gray-800'} group-hover:border-neon-blue/30`}>
                         <div className="flex items-center justify-between text-xs md:text-sm font-mono">
-                          <span className={`transition-colors ${isCore ? 'text-neon-blue' : 'text-gray-500'} group-hover:text-neon-blue font-bold`}>
-                            {service.id === 'core' ? 'FREE ADS MANAGER' : 'VIEW PACKAGES'}
+                          <span className={`transition-colors ${isCenter ? 'text-neon-blue' : 'text-gray-500'} group-hover:text-neon-blue font-bold`}>
+                            VIEW PACKAGES
                           </span>
-                          <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${isCore ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
+                          <ArrowRight size={16} className={`transition-transform group-hover:translate-x-1 ${isCenter ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
                         </div>
                       </div>
                     </div>
@@ -479,6 +498,9 @@ const App: React.FC = () => {
                   disabled={formStatus === 'submitting' || formStatus === 'success'}
                   className={getInputClass('phone')}
                 />
+                {formErrors.phone && (
+                  <p className="text-red-500 text-xs mt-1 font-mono tracking-wide animate-pulse">{formErrors.phone}</p>
+                )}
               </div>
             </ScrollReveal>
 
@@ -520,7 +542,7 @@ const App: React.FC = () => {
             <ScrollReveal delay={500}>
               <Button className="w-full justify-center mt-4" disabled={formStatus === 'submitting' || formStatus === 'success'}>
                 {formStatus === 'submitting' ? (
-                  <Loader2 className="animate-spin" />
+                  <LoadingSpinner />
                 ) : formStatus === 'success' ? (
                   <span className="text-green-400 flex items-center gap-2"><CheckCircle2 size={16} /> Protocol Initiated</span>
                 ) : (

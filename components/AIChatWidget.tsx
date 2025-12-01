@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2, Image as ImageIcon, Paperclip } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Image as ImageIcon } from 'lucide-react';
 import { sendMessageToGemini } from '../services/geminiService';
 import { ChatMessage } from '../types';
+import LoadingSpinner from './LoadingSpinner';
 
 const FAQ_DATA = [
   { 
@@ -268,7 +269,7 @@ const AIChatWidget: React.FC = () => {
                 disabled={loading || (!input.trim() && !selectedImage)}
                 className="text-neon-blue hover:text-white disabled:opacity-50 transition-colors p-2"
               >
-                <Send size={18} />
+                {loading ? <LoadingSpinner size={18} /> : <Send size={18} />}
               </button>
             </div>
           </div>
