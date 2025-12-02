@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X, Quote, ExternalLink } from 'lucide-react';
+import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X, Quote, ExternalLink, Mail } from 'lucide-react';
 import ParticlesBackground from './components/ParticlesBackground';
 import AIChatWidget from './components/AIChatWidget';
 import Button from './components/Button';
@@ -644,17 +644,42 @@ const App: React.FC = () => {
               )}
             </ScrollReveal>
           </form>
-
-          <div className="mt-12 md:mt-16 flex flex-wrap justify-center gap-4 md:gap-8 text-gray-600 text-sm">
-             <span className="hover:text-neon-blue cursor-pointer transition-colors">Privacy Protocol</span>
-             <span className="hover:text-neon-blue cursor-pointer transition-colors">Terms of Engagement</span>
-          </div>
-          
-          <div className="mt-8 text-gray-700 text-xs md:text-sm font-mono">
-            © {new Date().getFullYear()} AFA MEDIA. SYSTEM ONLINE.
-          </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-12 bg-black border-t border-gray-900 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            
+            {/* Left: Branding/Copyright */}
+            <div className="flex flex-col items-center md:items-start gap-2">
+               <div className="text-gray-500 font-bold tracking-widest text-sm">AFA MEDIA</div>
+               <div className="text-gray-700 text-xs font-mono">
+                  © {new Date().getFullYear()} SYSTEM ONLINE.
+               </div>
+            </div>
+
+            {/* Center/Right: Contact & Links */}
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
+               <a 
+                 href="mailto:ali@afamedia.co.uk?subject=Project%20Inquiry" 
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="group flex items-center gap-3 text-gray-400 hover:text-neon-blue transition-colors"
+               >
+                  <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center group-hover:bg-neon-blue/10 transition-colors border border-gray-800 group-hover:border-neon-blue/50">
+                     <Mail size={14} />
+                  </div>
+                  <span className="text-sm font-mono">ali@afamedia.co.uk</span>
+               </a>
+
+               <div className="flex gap-6 text-xs text-gray-600 font-mono uppercase tracking-wider">
+                   <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
+                   <span className="hover:text-white cursor-pointer transition-colors">Terms</span>
+               </div>
+            </div>
+        </div>
+      </footer>
 
       {/* AI Widget */}
       <AIChatWidget />
