@@ -7,7 +7,8 @@ export const APP_NAME = "AFA MEDIA";
 // SECURITY BYPASS: We split the URL into parts to prevent Netlify's security scanner
 // from flagging the long ID as a "secret key" and blocking the build.
 const SHEET_ID_PART_1 = "https://script.google.com/macros/s/";
-const SHEET_ID_PART_2 = "AKfycbzIevFO7jr2wqmc1jm_-lITVmVa5dPGFOhL8tdt3J6LcFhBpCC7if07bl8jq28nQSarUA";
+// Updated with the NEW deployment ID provided by the user
+const SHEET_ID_PART_2 = "AKfycbzlhQqo5iQVIlEUH7UmE4SbMLZbpdsDkazJPmVvReyZ1XEYo96uORezuRBKz69Vf5-_vg";
 const SHEET_ID_PART_3 = "/exec";
 
 export const GOOGLE_SHEETS_WEBHOOK_URL = SHEET_ID_PART_1 + SHEET_ID_PART_2 + SHEET_ID_PART_3;
