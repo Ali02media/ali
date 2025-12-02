@@ -4,8 +4,8 @@ import { ServicePackage, FeatureItem, TestimonialItem } from './types';
 
 export const APP_NAME = "AFA MEDIA";
 
-// Replaced placeholder with actual Google Apps Script Deployment URL
-export const GOOGLE_SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzIevFO7jr2wqmc1jm_-lITVmVa5dPGFOhL8tdt3J6LcFhBpCC7if07bl8jq28nQSarUA/exec";
+// We now load this from Netlify Environment Variables to prevent security scanner errors
+export const GOOGLE_SHEETS_WEBHOOK_URL = process.env.GOOGLE_SHEETS_URL || "";
 
 export const SERVICES: ServicePackage[] = [
   {
