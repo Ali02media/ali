@@ -21,3 +21,10 @@ export interface FeatureItem {
   description: string;
   icon: React.ElementType;
 }
+
+export interface TestimonialItem {
+  quote: string;
+  author: string;
+  company: string;
+  url: string;
+}

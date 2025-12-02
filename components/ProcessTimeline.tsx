@@ -5,28 +5,28 @@ import ScrollReveal from './ScrollReveal';
 const steps = [
   {
     id: '01',
-    title: 'Calibration',
-    subtitle: 'Audit & Strategy',
-    description: 'We connect to your current infrastructure, run a 50-point diagnostic scan, and identify the exact bottlenecks throttling your growth.'
+    title: 'Strategic Alignment',
+    subtitle: 'Discovery Session',
+    description: 'We initiate a direct strategy meeting to discuss your specific business needs, mapping out the exact operational objectives required for growth.'
   },
   {
     id: '02',
-    title: 'Integration',
-    subtitle: 'System Deployment',
-    description: 'We deploy the "SmartSite" protocol and configure your Meta Ad accounts. This is a "Done-For-You" build phase.'
+    title: 'Deep Reconnaissance',
+    subtitle: '3-Layer Analysis',
+    description: 'We research your audience on three deep levels: External (Circumstances), Internal (Pain Points), and Psychological (Identity) to guarantee resonance.'
   },
   {
     id: '03',
-    title: 'Ignition',
-    subtitle: 'Traffic Launch',
-    description: 'Ad campaigns go live. Our predictive AI targets your ideal client profile with surgical precision to generate immediate data.',
+    title: 'System Architecture',
+    subtitle: 'Build & Transparency',
+    description: 'We engineer your custom system, transmitting detailed weekly progress updates to ensure the build aligns perfectly with your vision.',
     highlight: true
   },
   {
     id: '04',
-    title: 'Acceleration',
-    subtitle: 'Optimization & Scale',
-    description: 'The system learns. We cut losing ads, scale winning creatives, and optimize the landing page for maximum conversion velocity.'
+    title: 'Deployment & Scale',
+    subtitle: 'Launch Protocol',
+    description: 'The system goes live. We analyze real-time performance data, optimize for conversion efficiency, and scale the campaigns that deliver ROI.'
   }
 ];
 

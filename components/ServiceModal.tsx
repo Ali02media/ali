@@ -36,7 +36,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
               <ul className="space-y-3">
                 <li className="flex gap-3 text-gray-300 text-sm items-start">
                   <CheckCircle2 className="text-neon-blue min-w-[16px] mt-0.5" size={16} />
-                  <span><strong>You Pay:</strong> The monthly SmartSite System fee (Hosting, Design, Lead CRM).</span>
+                  <span><strong>You Pay:</strong> £330 for the SmartSite System (Hosting, Design, Lead CRM).</span>
                 </li>
                 <li className="flex gap-3 text-gray-300 text-sm items-start">
                   <CheckCircle2 className="text-neon-blue min-w-[16px] mt-0.5" size={16} />
@@ -114,7 +114,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
              <ul className="space-y-3 bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-800">
                 <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
-                  <span>5+ Custom Designed Pages</span>
+                  <span>4 Custom Designed Pages</span>
                 </li>
                 <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
@@ -122,11 +122,7 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
                 </li>
                 <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
-                  <span>CMS for Blog & Case Studies</span>
-                </li>
-                <li className="flex gap-3 text-gray-300 text-sm">
-                  <CheckCircle2 className="text-white min-w-[16px]" size={16} />
-                  <span>Advanced SEO Foundation</span>
+                  <span>Lead Capture Spreadsheet / Meeting Booking System</span>
                 </li>
                  <li className="flex gap-3 text-gray-300 text-sm">
                   <CheckCircle2 className="text-white min-w-[16px]" size={16} />
@@ -171,4 +167,3 @@ const ServiceModal: React.FC<ServiceModalProps> = ({ isOpen, onClose, serviceId 
 };
 
 export default ServiceModal;
-    

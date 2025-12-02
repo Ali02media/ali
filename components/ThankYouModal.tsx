@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle2, X, Radio } from 'lucide-react';
+import { CheckCircle2, X, Calendar } from 'lucide-react';
 import Button from './Button';
 import Confetti from './Confetti';
 
@@ -40,21 +40,30 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose }) => {
               </div>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wide">TRANSMISSION RECEIVED</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-wide">PHASE 1 COMPLETE</h2>
           <div className="flex items-center justify-center gap-2 text-neon-blue/80 font-mono text-xs uppercase tracking-widest mb-6">
-              <Radio size={12} className="animate-pulse" />
-              <span>Signal Established</span>
+              <Calendar size={12} className="animate-pulse" />
+              <span>Initiating Phase 2</span>
           </div>
 
           <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-8">
-            Your data has been encrypted and securely logged in our core system. 
+            Intelligence received and encrypted. 
             <br /><br />
-            An AFA operative will review your intelligence file and establish contact within <span className="text-neon-blue font-bold">72 hours</span>.
+            To finalize the protocol, you must <span className="text-neon-blue font-bold">synchronize a time slot</span> for your secure strategy briefing.
           </p>
 
-          <Button onClick={onClose} className="w-full justify-center">
-            Return to Base
+          <Button 
+            className="w-full justify-center"
+            data-cal-link="ali-ahmed-lwiikf/30min"
+            data-cal-namespace="30min"
+            data-cal-config='{"layout":"month_view"}'
+          >
+            Secure Time Slot
           </Button>
+
+          <button onClick={onClose} className="mt-6 text-xs text-gray-500 hover:text-white font-mono uppercase tracking-wider">
+            Return to Base (Skip)
+          </button>
         </div>
       </div>
     </>

@@ -10,7 +10,7 @@ const FAQ_DATA = [
     id: 'pricing',
     label: 'Pricing?',
     keywords: ['price', 'cost', 'how much', 'pricing', 'expensive', 'money'], 
-    answer: "Investments start at $2,500/mo for the Core System. Precise quotes require a diagnostic scan of your current infrastructure." 
+    answer: "SYSTEM PRICING DATA:\n\n1. Neural Sales Funnels:\n   • Flashpoint Single: £50\n   • Conversion Triad: £110\n   • Cash Injection Protocol: £170\n\n2. Full Brand Architecture (Upgrade):\n   • NOW: £270 (Reduced from £887)\n   • Includes: 4 Pages, Lead Capture, Chatbot, 3D Elements.\n\n3. Core Protocol (SmartSite):\n   • NOW: £330 (Reduced from £1000)\n   • Client pays for build. Meta Ads management is FREE." 
   },
   { 
     id: 'services',
@@ -28,7 +28,7 @@ const FAQ_DATA = [
     id: 'guarantee',
     label: 'Guarantee?',
     keywords: ['guarantee', 'refund', 'results', 'risk'],
-    answer: "We operate on a performance basis defined during your audit. If KPIs aren't met, we work for free until they are."
+    answer: "We operate on a performance basis defined during your strategy session. If KPIs aren't met, we work for free until they are."
   }
 ];
 
@@ -111,7 +111,9 @@ const AIChatWidget: React.FC = () => {
 
     try {
       // Convert internal ChatMessage format to Gemini history format
-      const history = messages.map(m => {
+      // IMPORTANT: Filter out the first message if it's from the model (Welcome message)
+      // Gemini API requires the first history item to be from 'user'
+      let apiHistory = messages.filter((_, index) => index > 0).map(m => {
         const parts: any[] = [];
         if (m.image) {
              parts.push({ text: "[User uploaded an image]" });
@@ -122,7 +124,10 @@ const AIChatWidget: React.FC = () => {
           parts: parts
         };
       });
-
+      
+      // If history is empty after filtering (first message), ensure we just send the new content
+      // The sendMessageToGemini function takes history as context, but the current message is sent separately.
+      
       // Prepare image data if present
       let imageData = undefined;
       if (currentImage) {
@@ -136,7 +141,7 @@ const AIChatWidget: React.FC = () => {
         }
       }
 
-      const responseText = await sendMessageToGemini(history, currentInput, imageData);
+      const responseText = await sendMessageToGemini(apiHistory, currentInput, imageData);
       
       const botMsg: ChatMessage = { role: 'model', text: responseText, timestamp: Date.now() };
       setMessages(prev => [...prev, botMsg]);
@@ -168,7 +173,7 @@ const AIChatWidget: React.FC = () => {
           <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed ${
+                <div className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.role === 'user' 
                     ? 'bg-neon-blue/20 text-white border border-neon-blue/30' 
                     : 'bg-gray-800/50 text-gray-200 border border-gray-700'

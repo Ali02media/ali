@@ -1,6 +1,6 @@
 
-import { Brain, Zap, Layout, Mail, Globe, Target } from 'lucide-react';
-import { ServicePackage, FeatureItem } from './types';
+import { Brain, Zap, Layout, Mail, Globe, Target, Bot } from 'lucide-react';
+import { ServicePackage, FeatureItem, TestimonialItem } from './types';
 
 export const APP_NAME = "AFA MEDIA";
 
@@ -14,12 +14,11 @@ export const SERVICES: ServicePackage[] = [
     description: 'The sovereign growth engine. A hyper-optimized conversion terminal fused with algorithmic traffic acquisition. We don\'t just get leads; we engineer market dominance.',
     features: [
       'Conversion-Focused "SmartSite"',
-      'AI-Driven Meta Ad Campaigns',
+      'Free Meta Ads Management',
       'Automated Lead Nurturing',
-      'Real-time Analytics Dashboard',
       'CRM Integration'
     ],
-    highlight: true,
+    highlight: false,
     priceRange: 'Starting at $2,500/mo'
   },
   {
@@ -45,42 +44,57 @@ export const SERVICES: ServicePackage[] = [
       'Blog/Content Hub',
       'CMS Integration'
     ],
-    highlight: false
+    highlight: true
   }
 ];
 
 export const PAIN_POINTS: FeatureItem[] = [
   {
-    title: "Traditional Websites Are Dead",
-    description: "Most websites are digital brochures that look pretty but fail to convert traffic into paying clients.",
+    title: "Static Sites Bleed Revenue",
+    description: "A website without AI is just a digital brochure. If you aren't engaging visitors immediately via 24/7 chatbots, you lose 60% of potential leads.",
     icon: Layout
   },
   {
-    title: "Ads Without Systems Fail",
-    description: "Throwing money at Meta Ads without a dedicated conversion mechanism is burning cash.",
-    icon: Zap
+    title: "Generic Copy is Invisible",
+    description: "Surface-level emails get deleted. If your marketing doesn't articulate your lead's internal pain better than they can, it fails to connect.",
+    icon: Mail
   },
   {
-    title: "Manual Follow-up is Slow",
-    description: "If you aren't contacting leads within 5 minutes, you're losing 80% of your opportunities.",
-    icon: Mail
+    title: "The Generalist Trap",
+    description: "Using a 'one-size-fits-all' template for a specialized niche is a liability. Generic tools cannot handle your specific operational demands.",
+    icon: Zap
   }
 ];
 
 export const SOLUTIONS: FeatureItem[] = [
   {
-    title: "AI-Powered Optimization",
-    description: "Our systems learn from every interaction, constantly improving your cost-per-acquisition.",
+    title: "AI-Powered Sentience",
+    description: "Websites that talk back. We integrate custom AI Agents that understand context, answer queries, and qualify leads 24/7 while you sleep.",
+    icon: Bot
+  },
+  {
+    title: "Psycho-Emotive Resonance",
+    description: "Our email systems understand your audience. We craft deep, emotionally connected copy that validates their pain and compels action.",
     icon: Brain
   },
   {
-    title: "Hyper-Targeted Reach",
-    description: "We use predictive AI to place your offer in front of your ideal customer exactly when they are ready to buy.",
-    icon: Target
+    title: "Niche-Locked Architecture",
+    description: "We don't use templates. We engineer advanced, custom digital ecosystems specifically equipped for your industry's unique workflow.",
+    icon: Globe
+  }
+];
+
+export const TESTIMONIALS: TestimonialItem[] = [
+  {
+    quote: "I love it. It looks really professional. It's straight to the point, no fuss. Clean and clear, it's much better than the old one. Thats really great work Ali, thank you so much.",
+    author: "Oya",
+    company: "On Point Painting",
+    url: "https://www.onpointpainting.uk/"
   },
   {
-    title: "Global Scalability",
-    description: "Built on infrastructure that scales instantly as your business grows from 10 to 10k leads.",
-    icon: Globe
+    quote: "The site is great even on the phone it looks great. Thank you so much for your efforts brother",
+    author: "Gökhan Aydoğdu",
+    company: "Legentax",
+    url: "https://www.legentax.co.uk/"
   }
 ];

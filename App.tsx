@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X } from 'lucide-react';
+import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X, Quote, ExternalLink } from 'lucide-react';
 import ParticlesBackground from './components/ParticlesBackground';
 import AIChatWidget from './components/AIChatWidget';
 import Button from './components/Button';
@@ -10,15 +10,17 @@ import ScrollReveal from './components/ScrollReveal';
 import CustomCursor from './components/CustomCursor';
 import ProcessTimeline from './components/ProcessTimeline';
 import ThankYouModal from './components/ThankYouModal';
+import BookingSuccessModal from './components/BookingSuccessModal';
 import Logo from './components/Logo';
 import LoadingSpinner from './components/LoadingSpinner';
-import { SERVICES, PAIN_POINTS, SOLUTIONS, GOOGLE_SHEETS_WEBHOOK_URL } from './constants';
+import { SERVICES, PAIN_POINTS, SOLUTIONS, TESTIMONIALS, GOOGLE_SHEETS_WEBHOOK_URL } from './constants';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
+  const [showBookingSuccess, setShowBookingSuccess] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({ name: '', email: '', url: '', phone: '', message: '' });
@@ -32,14 +34,61 @@ const App: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToContact = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-    setMobileMenuOpen(false);
-  };
+  // Cal.com Success Event Listener
+  useEffect(() => {
+    const handleBookingSuccess = (e: any) => {
+      // The event detail contains data about the booking
+      // We check if it matches the event type we expect (optional, but good safety)
+      if (e.detail?.data) {
+        setShowThankYou(false); // Close the Phase 1 modal
+        setShowBookingSuccess(true); // Open the Phase 2 Success modal
+      }
+    };
+
+    // Cal.com emits custom event 'cal:bookingSuccessful'
+    // TypeScript doesn't know about this custom event on window, so we cast it
+    (window as any).addEventListener('cal:bookingSuccessful', handleBookingSuccess);
+
+    return () => {
+      (window as any).removeEventListener('cal:bookingSuccessful', handleBookingSuccess);
+    };
+  }, []);
 
   const handleNavClick = (id: string) => {
     setMobileMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    // Custom smooth scroll implementation to prevent "teleporting"
+    const navHeight = 100; // Offset for fixed header
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+    const offsetPosition = elementPosition - navHeight;
+    const startPosition = window.scrollY;
+    const distance = offsetPosition - startPosition;
+    const duration = 1000; // 1 second duration for a premium feel
+    let start: number | null = null;
+
+    function animation(currentTime: number) {
+      if (start === null) start = currentTime;
+      const timeElapsed = currentTime - start;
+      const progress = Math.min(timeElapsed / duration, 1);
+      
+      // Ease Out Expo function for high-tech, precise feel
+      // Starts fast and slows down smoothly
+      const ease = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      
+      window.scrollTo({
+        top: startPosition + (distance * ease(progress)),
+        behavior: "auto" // Force explicit frame update
+      });
+
+      if (timeElapsed < duration) {
+        requestAnimationFrame(animation);
+      }
+    }
+
+    requestAnimationFrame(animation);
   };
 
   const handleServiceClick = (id: string) => {
@@ -189,6 +238,7 @@ const App: React.FC = () => {
     <div className="relative min-h-screen text-white font-sans selection:bg-neon-blue selection:text-black">
       <CustomCursor />
       <ParticlesBackground />
+      
       <ServiceModal 
         isOpen={!!activeModal} 
         onClose={() => setActiveModal(null)} 
@@ -197,6 +247,10 @@ const App: React.FC = () => {
       <ThankYouModal 
         isOpen={showThankYou}
         onClose={handleCloseThankYou}
+      />
+      <BookingSuccessModal 
+        isOpen={showBookingSuccess}
+        onClose={() => setShowBookingSuccess(false)}
       />
       
       {/* Navigation */}
@@ -211,7 +265,7 @@ const App: React.FC = () => {
             <button onClick={() => handleNavClick('problem')} className="hover:text-neon-blue transition-colors">THE PROBLEM</button>
             <button onClick={() => handleNavClick('services')} className="hover:text-neon-blue transition-colors">SYSTEMS</button>
             <button onClick={() => handleNavClick('process')} className="hover:text-neon-blue transition-colors">PROCESS</button>
-            <button onClick={scrollToContact} className="text-white hover:text-neon-blue transition-colors">START PROJECT //</button>
+            <button onClick={() => handleNavClick('contact')} className="text-white hover:text-neon-blue transition-colors">START PROJECT //</button>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -228,7 +282,7 @@ const App: React.FC = () => {
             <button onClick={() => handleNavClick('problem')} className="text-2xl font-mono font-bold hover:text-neon-blue transition-colors">THE PROBLEM</button>
             <button onClick={() => handleNavClick('services')} className="text-2xl font-mono font-bold hover:text-neon-blue transition-colors">SYSTEMS</button>
             <button onClick={() => handleNavClick('process')} className="text-2xl font-mono font-bold hover:text-neon-blue transition-colors">PROCESS</button>
-            <Button onClick={scrollToContact} className="mt-4">START PROJECT //</Button>
+            <Button onClick={() => handleNavClick('contact')} className="mt-4">START PROJECT //</Button>
         </div>
       </nav>
 
@@ -246,10 +300,10 @@ const App: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto justify-center animate-fade-in-up [animation-delay:600ms] opacity-0 px-6">
-          <Button onClick={scrollToContact} className="w-full sm:w-auto justify-center animate-button-pulse hover:animate-none">
-            Get Free AI Audit
+          <Button onClick={() => handleNavClick('contact')} className="w-full sm:w-auto justify-center animate-button-pulse hover:animate-none">
+            Get Free AI Strategy
           </Button>
-          <Button variant="outline" onClick={() => document.getElementById('services')?.scrollIntoView({behavior: 'smooth'})} icon={false} className="w-full sm:w-auto justify-center">
+          <Button variant="outline" onClick={() => handleNavClick('services')} icon={false} className="w-full sm:w-auto justify-center">
             Explore Systems
           </Button>
         </div>
@@ -260,7 +314,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Pain Points Section */}
-      <section id="problem" className="py-16 md:py-24 relative border-t border-gray-900 bg-black">
+      <section id="problem" className="py-16 md:py-24 relative border-t border-gray-900 bg-black scroll-mt-32">
         <div className="max-w-7xl mx-auto px-6">
           <ScrollReveal>
             <div className="mb-12 md:mb-16">
@@ -307,7 +361,7 @@ const App: React.FC = () => {
       </ScrollReveal>
 
       {/* Solution / Process Section */}
-      <section id="process" className="py-16 md:py-24 relative bg-gradient-to-b from-gray-900 to-black">
+      <section id="process" className="py-16 md:py-24 relative bg-gradient-to-b from-gray-900 to-black scroll-mt-32">
         <div className="max-w-7xl mx-auto px-6">
            <ScrollReveal>
             <div className="mb-12 md:mb-16 text-left md:text-center">
@@ -342,7 +396,7 @@ const App: React.FC = () => {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20 md:py-32 relative overflow-hidden">
+      <section id="services" className="py-20 md:py-32 relative overflow-hidden scroll-mt-32">
         {/* Decorative grid */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-neon-blue to-transparent opacity-50" />
@@ -362,7 +416,7 @@ const App: React.FC = () => {
           </ScrollReveal>
 
           {/* Podium Grid Layout */}
-          <div className="grid md:grid-cols-3 gap-6 items-center justify-center pt-0 md:pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center justify-center pt-4 md:pt-10 max-w-lg md:max-w-none mx-auto">
             {podiumServices.map((service, i) => {
               const isCenter = i === 1; // Middle element is now "Full Multi-Page Upgrade"
               
@@ -373,8 +427,8 @@ const App: React.FC = () => {
                     className={`
                       group relative flex flex-col p-6 md:p-8 rounded-3xl border transition-all duration-500 cursor-pointer overflow-hidden
                       ${isCenter 
-                        ? 'md:scale-110 z-20 bg-gray-900/80 border-neon-blue shadow-[0_0_40px_rgba(0,243,255,0.2)] h-full min-h-[500px] md:min-h-[600px]' 
-                        : 'bg-black/40 border-gray-800 hover:border-neon-blue/50 h-full min-h-[400px] md:min-h-[500px]'
+                        ? 'md:scale-110 z-20 bg-gray-900/80 border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.15)] md:shadow-[0_0_40px_rgba(0,243,255,0.2)] min-h-[460px] md:min-h-[600px]' 
+                        : 'bg-black/40 border-gray-800 hover:border-neon-blue/50 min-h-[400px] md:min-h-[500px]'
                       }
                       hover:shadow-[0_0_30px_rgba(0,243,255,0.4)] hover:-translate-y-2 hover:bg-gray-900/60
                     `}
@@ -411,8 +465,8 @@ const App: React.FC = () => {
                       {/* Features */}
                       <ul className="space-y-3 md:space-y-4 mb-8 flex-1">
                         {service.features.slice(0, 4).map((feat, idx) => (
-                          <li key={idx} className={`flex items-start gap-3 text-xs md:text-sm transition-colors ${isCenter ? 'text-gray-300' : 'text-gray-400'} group-hover:text-white`}>
-                            <CheckCircle2 size={16} className={`mt-0.5 transition-colors ${isCenter ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
+                          <li key={idx} className={`flex items-start gap-3 text-sm transition-colors ${isCenter ? 'text-gray-300' : 'text-gray-400'} group-hover:text-white`}>
+                            <CheckCircle2 size={16} className={`mt-0.5 shrink-0 transition-colors ${isCenter ? 'text-neon-blue' : 'text-gray-600'} group-hover:text-neon-blue`} />
                             <span>{feat}</span>
                           </li>
                         ))}
@@ -436,8 +490,44 @@ const App: React.FC = () => {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20 md:py-32 relative border-t border-gray-900 bg-black/80">
+        <div className="max-w-7xl mx-auto px-6">
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <h2 className="text-xs md:text-sm font-mono text-neon-blue mb-4 uppercase tracking-widest">System Validation</h2>
+              <h3 className="text-3xl md:text-5xl font-bold">Client Logs</h3>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {TESTIMONIALS.map((t, i) => (
+              <ScrollReveal key={i} delay={i * 200}>
+                <div className="glass-panel p-8 rounded-2xl border border-gray-800 hover:border-neon-blue/30 transition-all duration-300 relative group h-full flex flex-col">
+                  <Quote className="text-gray-700 mb-6 group-hover:text-neon-blue transition-colors" size={40} />
+                  <p className="text-gray-300 text-lg leading-relaxed italic mb-8 flex-1">"{t.quote}"</p>
+                  
+                  <div className="border-t border-gray-800 pt-6 mt-auto">
+                    <div className="font-bold text-white text-lg">{t.author}</div>
+                    <a 
+                      href={t.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-neon-blue text-sm hover:underline mt-1"
+                    >
+                      {t.company}
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
-      <section id="contact" className="py-20 md:py-32 bg-black relative border-t border-gray-900">
+      <section id="contact" className="py-20 md:py-32 bg-black relative border-t border-gray-900 scroll-mt-32">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <ScrollReveal>
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 md:mb-8 tracking-tight">Ready To <span className="text-neon-blue">Evolve?</span></h2>
@@ -546,7 +636,7 @@ const App: React.FC = () => {
                 ) : formStatus === 'success' ? (
                   <span className="text-green-400 flex items-center gap-2"><CheckCircle2 size={16} /> Protocol Initiated</span>
                 ) : (
-                  'Initiate Audit Protocol'
+                  'Initiate Strategy Protocol'
                 )}
               </Button>
               {formStatus === 'error' && (

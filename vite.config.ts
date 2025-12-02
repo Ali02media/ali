@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => {
     define: {
       // Polyfill process.env.API_KEY for the browser
       // Using || "" ensures it doesn't print "undefined" into the code which can cause syntax errors
-      'process.env.API_KEY': JSON.stringify(env.API_KEY || "")
+      // We check env.API_KEY (from loadEnv) AND process.env.API_KEY (system env) to ensure we catch Netlify's variables
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY || "")
     },
     build: {
       outDir: 'dist',
