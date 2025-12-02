@@ -61,6 +61,28 @@ Constraints:
 - Do not be overly enthusiastic; be precise and analytical.
 `;
 
+// Helper function to handle retries for 429 (Rate Limit) errors
+const retryOperation = async <T>(operation: () => Promise<T>, maxRetries: number = 3): Promise<T> => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      // Check for Rate Limit (429) or Service Unavailable (503)
+      const isRateLimit = error.message?.includes('429') || error.status === 429;
+      const isServerOverload = error.message?.includes('503') || error.status === 503;
+
+      if ((isRateLimit || isServerOverload) && i < maxRetries - 1) {
+        const waitTime = Math.pow(2, i) * 1000 + Math.random() * 500; // Exponential backoff + jitter
+        console.warn(`Rate limit hit. Retrying in ${Math.round(waitTime)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Max retries exceeded");
+};
+
 export const sendMessageToGemini = async (
   history: { role: string, parts: { text?: string, inlineData?: any }[] }[], 
   newMessage: string,
@@ -93,13 +115,20 @@ export const sendMessageToGemini = async (
       ];
     }
 
-    const result = await chat.sendMessage({ message: messageContent });
+    // Wrap the send message call in the retry logic
+    const result = await retryOperation(async () => {
+       return await chat.sendMessage({ message: messageContent });
+    });
+
     return result.text || "I am recalibrating my neural processors. Please try again.";
   } catch (error) {
     console.error("Gemini Error:", error);
     // Return a user-friendly error message, differentiating between auth/key errors and general connectivity
     if (error instanceof Error && (error.message.includes("API Key") || error.message.includes("401") || error.message.includes("403"))) {
-       return "System Alert: API Key authentication failed. Please verify the API_KEY environment variable in Netlify.";
+       return "System Alert: API Key authentication failed. Get your key at https://aistudio.google.com/app/apikey, add it to Netlify 'API_KEY' variable, and TRIGGER A REDEPLOY.";
+    }
+    if (error instanceof Error && error.message.includes("429")) {
+        return "System Alert: Traffic overload. My neural network is processing too many requests. Please wait 10 seconds.";
     }
     return "System Alert: Unable to connect to AI mainframe. Connection interrupted.";
   }
@@ -127,9 +156,12 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       Service Name|Short futuristic explanation why.
     `;
 
-    const result = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+    // Wrap in retry logic
+    const result = await retryOperation(async () => {
+      return await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
     });
     
     const text = result.text || "";
@@ -147,11 +179,14 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
   } catch (error) {
     console.error("Gemini Recommendation Error:", error);
     if (error instanceof Error && (error.message.includes("API Key") || error.message.includes("403"))) {
-       console.error("CRITICAL: API Key missing or restricted. If on a live domain, ensure your Google AI Studio key allows this domain.");
+       return {
+         service: "System Offline (API Key Error)",
+         reason: "The AI module cannot authenticate. Get your key at aistudio.google.com, add 'API_KEY' to Netlify, and REDEPLOY."
+       };
     }
     return { 
-      service: "AI SmartSite + Meta Ads", 
-      reason: "Network interference detected. Defaulting to our core growth protocol." 
+      service: "Connection Interrupted", 
+      reason: "Unable to reach the neural network. Please check your internet connection." 
     };
   }
 };
