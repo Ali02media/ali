@@ -28,7 +28,7 @@ const GlitchTransition: React.FC<GlitchTransitionProps> = ({ isActive }) => {
       <div className="absolute inset-0 bg-red-500/10 mix-blend-color-dodge animate-pulse" style={{ animationDuration: '0.1s' }} />
       <div className="absolute inset-0 bg-blue-500/10 mix-blend-color-dodge animate-pulse" style={{ animationDuration: '0.15s', animationDelay: '0.05s' }} />
       
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{__html: `
         .glitch-text {
             text-shadow: 2px 0 #ff0000, -2px 0 #00f3ff;
         }
@@ -40,7 +40,7 @@ const GlitchTransition: React.FC<GlitchTransitionProps> = ({ isActive }) => {
         .animate-scale-x {
             animation: scale-x 0.4s ease-in-out infinite;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };
