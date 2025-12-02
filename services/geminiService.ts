@@ -2,7 +2,6 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Helper to initialize the client only when needed (Lazy Loading)
-// This prevents the "Black Screen" crash if the API Key is missing on site load.
 const getGenAIClient = () => {
   let apiKey = "";
   try {
@@ -12,8 +11,13 @@ const getGenAIClient = () => {
     console.warn("Environment variable access failed");
   }
 
+  // Debug log (will show in browser console F12)
   if (!apiKey) {
-    throw new Error("API Key is missing. Please check your Netlify environment variables.");
+    console.error("CRITICAL: API Key is empty in getGenAIClient");
+    throw new Error("API Key is missing. Please check Netlify settings.");
+  } else {
+    // Log first 4 chars only for safety check
+    console.log("AI Client Initializing with Key starting:", apiKey.substring(0, 4) + "...");
   }
 
   return new GoogleGenAI({ apiKey: apiKey });
@@ -67,12 +71,11 @@ const retryOperation = async <T>(operation: () => Promise<T>, maxRetries: number
     try {
       return await operation();
     } catch (error: any) {
-      // Check for Rate Limit (429) or Service Unavailable (503)
       const isRateLimit = error.message?.includes('429') || error.status === 429;
       const isServerOverload = error.message?.includes('503') || error.status === 503;
 
       if ((isRateLimit || isServerOverload) && i < maxRetries - 1) {
-        const waitTime = Math.pow(2, i) * 1000 + Math.random() * 500; // Exponential backoff + jitter
+        const waitTime = Math.pow(2, i) * 1000 + Math.random() * 500;
         console.warn(`Rate limit hit. Retrying in ${Math.round(waitTime)}ms...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         continue;
@@ -89,7 +92,6 @@ export const sendMessageToGemini = async (
   imageData?: { mimeType: string, data: string }
 ): Promise<string> => {
   try {
-    // Initialize AI here, not at top level
     const ai = getGenAIClient();
     
     const chat = ai.chats.create({
@@ -115,28 +117,31 @@ export const sendMessageToGemini = async (
       ];
     }
 
-    // Wrap the send message call in the retry logic
     const result = await retryOperation(async () => {
        return await chat.sendMessage({ message: messageContent });
     });
 
     return result.text || "I am recalibrating my neural processors. Please try again.";
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    // Return a user-friendly error message, differentiating between auth/key errors and general connectivity
-    if (error instanceof Error && (error.message.includes("API Key") || error.message.includes("401") || error.message.includes("403"))) {
-       return "System Alert: API Key authentication failed. Get your key at https://aistudio.google.com/app/apikey, add it to Netlify 'API_KEY' variable, and TRIGGER A REDEPLOY.";
+  } catch (error: any) {
+    console.error("Gemini Error Detail:", error);
+    
+    // Detailed Error Reporting for the User
+    if (error.message.includes("API Key") || error.message.includes("403")) {
+       return `SYSTEM ERROR: API Key Invalid. Google Refused Connection. (Error: ${error.message})`;
     }
-    if (error instanceof Error && error.message.includes("429")) {
-        return "System Alert: Traffic overload. My neural network is processing too many requests. Please wait 10 seconds.";
+    if (error.message.includes("429")) {
+        return "SYSTEM ALERT: Traffic Overload. Please wait 10 seconds.";
     }
-    return "System Alert: Unable to connect to AI mainframe. Connection interrupted.";
+    if (error.message.includes("404")) {
+        return "SYSTEM ERROR: Model Not Found. (Check 'gemini-2.5-flash' availability).";
+    }
+    // Return raw error if unknown so we can debug
+    return `CONNECTION ERROR: ${error.message}`;
   }
 };
 
 export const getServiceRecommendation = async (niche: string): Promise<{ service: string; reason: string }> => {
   try {
-    // Initialize AI here, not at top level
     const ai = getGenAIClient();
 
     const prompt = `
@@ -156,7 +161,6 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       Service Name|Short futuristic explanation why.
     `;
 
-    // Wrap in retry logic
     const result = await retryOperation(async () => {
       return await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -176,17 +180,11 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       reason: "Our analysis indicates this is the most effective protocol for scaling your specific sector." 
     };
 
-  } catch (error) {
-    console.error("Gemini Recommendation Error:", error);
-    if (error instanceof Error && (error.message.includes("API Key") || error.message.includes("403"))) {
-       return {
-         service: "System Offline (API Key Error)",
-         reason: "The AI module cannot authenticate. Get your key at aistudio.google.com, add 'API_KEY' to Netlify, and REDEPLOY."
-       };
-    }
+  } catch (error: any) {
+    console.error("Recommendation Error:", error);
     return { 
-      service: "Connection Interrupted", 
-      reason: "Unable to reach the neural network. Please check your internet connection." 
+      service: "System Offline", 
+      reason: `Diagnosis failed: ${error.message || "Unknown Error"}. Check API Key.` 
     };
   }
 };
