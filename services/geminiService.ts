@@ -1,24 +1,6 @@
-
-import { GoogleGenAI } from "@google/genai";
-
-// Helper to initialize the client only when needed (Lazy Loading)
-const getGenAIClient = () => {
-  let apiKey = "";
-  try {
-    // process.env.API_KEY is replaced by Vite at build time
-    apiKey = process.env.API_KEY || "";
-  } catch (e) {
-    console.warn("Environment variable access failed");
-  }
-
-  // Debug log (will show in browser console F12)
-  if (!apiKey) {
-    console.error("CRITICAL: API Key is empty in getGenAIClient");
-    throw new Error("API Key is missing. Please check Netlify settings.");
-  }
-
-  return new GoogleGenAI({ apiKey: apiKey });
-};
+// CLIENT-SIDE SERVICE
+// This file no longer imports GoogleGenAI directly.
+// Instead, it calls the secure Netlify Backend Function.
 
 const SYSTEM_INSTRUCTION = `
 You are "AFA Bot", the elite AI growth consultant for AFA Media.
@@ -62,25 +44,26 @@ Constraints:
 - Do not be overly enthusiastic; be precise and analytical.
 `;
 
-// Helper function to handle retries for 429 (Rate Limit) errors
-const retryOperation = async <T>(operation: () => Promise<T>, maxRetries: number = 3): Promise<T> => {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await operation();
-    } catch (error: any) {
-      const isRateLimit = error.message?.includes('429') || error.status === 429;
-      const isServerOverload = error.message?.includes('503') || error.status === 503;
+// Helper to call the Netlify Backend
+const callBackendAI = async (payload: any) => {
+  try {
+    const response = await fetch('/.netlify/functions/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-      if ((isRateLimit || isServerOverload) && i < maxRetries - 1) {
-        const waitTime = Math.pow(2, i) * 1000 + Math.random() * 500;
-        console.warn(`Rate limit hit. Retrying in ${Math.round(waitTime)}ms...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        continue;
-      }
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Server Error: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.text;
+  } catch (error: any) {
+    console.error("AI Service Error:", error);
+    throw error;
   }
-  throw new Error("Max retries exceeded");
 };
 
 export const sendMessageToGemini = async (
@@ -89,58 +72,22 @@ export const sendMessageToGemini = async (
   imageData?: { mimeType: string, data: string }
 ): Promise<string> => {
   try {
-    const ai = getGenAIClient();
-    
-    const chat = ai.chats.create({
-      model: 'gemini-2.5-flash',
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7,
-      },
-      history: history,
+    // Call the backend function
+    return await callBackendAI({
+      endpointType: 'chat',
+      history,
+      message: newMessage,
+      image: imageData,
+      systemInstruction: SYSTEM_INSTRUCTION
     });
-
-    let messageContent: any = [{ text: newMessage }];
-    
-    if (imageData) {
-      messageContent = [
-        { 
-          inlineData: {
-            mimeType: imageData.mimeType,
-            data: imageData.data
-          }
-        },
-        { text: newMessage || "Analyze this interface." }
-      ];
-    }
-
-    const result = await retryOperation(async () => {
-       return await chat.sendMessage({ message: messageContent });
-    });
-
-    return result.text || "I am recalibrating my neural processors. Please try again.";
   } catch (error: any) {
-    console.error("Gemini Error Detail:", error);
-    
-    // Detailed Error Reporting for the User
-    if (error.message.includes("403") || error.message.includes("API Key")) {
-       return `ACCESS DENIED: Google blocked the connection (403). CHECK GOOGLE CLOUD CONSOLE -> API Credentials -> Application Restrictions. You must allow this Netlify domain.`;
-    }
-    if (error.message.includes("429")) {
-        return "SYSTEM ALERT: Traffic Overload. Please wait 10 seconds.";
-    }
-    if (error.message.includes("404")) {
-        return "SYSTEM ERROR: Model Not Found. (Check 'gemini-2.5-flash' availability).";
-    }
-    // Return raw error if unknown so we can debug
-    return `CONNECTION ERROR: ${error.message}`;
+    console.error("Chat Error:", error);
+    return `SYSTEM ALERT: Connection to mainframe failed. (${error.message || "Unknown Error"})`;
   }
 };
 
 export const getServiceRecommendation = async (niche: string): Promise<{ service: string; reason: string }> => {
   try {
-    const ai = getGenAIClient();
-
     const prompt = `
       Context: You are the AI intake system for AFA Media.
       User Niche: "${niche}"
@@ -158,15 +105,13 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       Service Name|Short futuristic explanation why.
     `;
 
-    const result = await retryOperation(async () => {
-      return await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-      });
+    // Call the backend function
+    const text = await callBackendAI({
+      endpointType: 'recommendation',
+      prompt
     });
     
-    const text = result.text || "";
-    const parts = text.split('|');
+    const parts = (text || "").split('|');
     
     if (parts.length >= 2) {
       return { service: parts[0].trim(), reason: parts[1].trim() };
@@ -179,17 +124,9 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
 
   } catch (error: any) {
     console.error("Recommendation Error:", error);
-    
-    if (error.message.includes("403")) {
-       return { 
-         service: "Access Denied", 
-         reason: "Google Cloud API Key is restricted. Add this domain to 'Application Restrictions' in Google Console." 
-       };
-    }
-    
     return { 
       service: "System Offline", 
-      reason: `Diagnosis failed: ${error.message || "Unknown Error"}. Check API Key.` 
+      reason: `Diagnosis failed: ${error.message || "Check API Key"}` 
     };
   }
 };
