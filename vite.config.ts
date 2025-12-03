@@ -13,8 +13,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // Frontend no longer needs API_KEY (Moved to Backend)
-      // We keep Google Sheets URL for the form submission
+      // API_KEY is now handled securely by Netlify Functions (Backend)
+      // We only inject the Google Sheets URL for the contact form
       'process.env.GOOGLE_SHEETS_URL': getEnvVar('GOOGLE_SHEETS_URL')
     },
     build: {

@@ -1,77 +1,132 @@
-import { GoogleGenAI } from "@google/genai";
 
 export const handler = async (event, context) => {
-  // CORS Headers to allow your site to talk to this function
+  // 1. Handle CORS Preflight
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "POST, OPTIONS"
   };
 
-  // Handle preflight requests
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "OK" };
   }
 
+  // 2. Only allow POST
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, headers, body: "Method Not Allowed" };
   }
 
   try {
-    const apiKey = process.env.API_KEY;
+    // 3. Get API Key (Checks both names to be safe)
+    const apiKey = process.env.API_KEY || process.env.GOOGLE_API_KEY;
+
     if (!apiKey) {
-      console.error("Server Error: API_KEY is missing in Netlify Environment Variables.");
-      return { 
-        statusCode: 500, 
-        headers, 
-        body: JSON.stringify({ error: "Server Configuration Error: API Key missing. Check Netlify settings." }) 
+      console.error("CRITICAL: API Key is missing in Netlify Environment Variables.");
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: "Server Configuration Error: API Key missing." })
       };
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-    const { endpointType, ...data } = JSON.parse(event.body);
+    // 4. Parse Body
+    if (!event.body) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing request body" }) };
+    }
+    
+    let requestBody;
+    try {
+      requestBody = JSON.parse(event.body);
+    } catch (e) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
+    }
 
-    // --- Scenario 1: Chat (AFA Bot) ---
+    const { endpointType, systemInstruction, prompt, history, message, image } = requestBody;
+
+    // 5. Construct Gemini Request
+    const model = 'gemini-1.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    let contents = [];
+
     if (endpointType === 'chat') {
-        const { history, message, image, systemInstruction } = data;
+      // Reconstruct chat history
+      if (history && Array.isArray(history)) {
+        contents = history.map(msg => ({
+          role: msg.role,
+          parts: msg.parts
+        }));
+      }
 
-        const chat = ai.chats.create({
-            model: 'gemini-2.5-flash',
-            config: { systemInstruction },
-            history: history || []
+      // Add new user message
+      const newParts = [];
+      if (image) {
+        newParts.push({
+          inlineData: {
+            mimeType: image.mimeType,
+            data: image.data
+          }
         });
+        newParts.push({ text: message || "Analyze this image." });
+      } else {
+        newParts.push({ text: message || "" });
+      }
 
-        // Handle text + optional image
-        let content = [{ text: message }];
-        if (image) {
-            content = [
-              { inlineData: { mimeType: image.mimeType, data: image.data } }, 
-              { text: message || "Analyze this image." }
-            ];
-        }
-
-        const result = await chat.sendMessage({ message: content });
-        return { statusCode: 200, headers, body: JSON.stringify({ text: result.text }) };
+      contents.push({ role: "user", parts: newParts });
+    } else {
+      // Simple prompt (Recommendation engine)
+      contents.push({
+        role: "user",
+        parts: [{ text: prompt || "Hello" }]
+      });
     }
 
-    // --- Scenario 2: Recommendation (System Matcher) ---
-    if (endpointType === 'recommendation') {
-        const { prompt } = data;
-        const result = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt
-        });
-        return { statusCode: 200, headers, body: JSON.stringify({ text: result.text }) };
+    const payload = {
+      contents: contents,
+      generationConfig: {
+        maxOutputTokens: 1000,
+        temperature: 0.7
+      }
+    };
+
+    if (systemInstruction) {
+      payload.systemInstruction = {
+        parts: [{ text: systemInstruction }]
+      };
     }
 
-    return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid endpointType" }) };
+    // 6. Call Google API
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API Error:", JSON.stringify(data));
+      return {
+        statusCode: response.status,
+        headers,
+        body: JSON.stringify({ error: data.error?.message || "Gemini API Error" })
+      };
+    }
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ text: text })
+    };
 
   } catch (error) {
-    console.error("Backend AI Error:", error);
-    return { 
-      statusCode: 500, 
-      headers, 
-      body: JSON.stringify({ error: error.message || "Internal Server Error" }) 
+    console.error("Function Crash:", error);
+    return {
+      statusCode: 502,
+      headers,
+      body: JSON.stringify({ error: `Backend Crash: ${error.message}` })
     };
   }
 };

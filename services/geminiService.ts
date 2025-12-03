@@ -1,6 +1,6 @@
+
 // CLIENT-SIDE SERVICE
-// This file no longer imports GoogleGenAI directly.
-// Instead, it calls the secure Netlify Backend Function.
+// Calls the Netlify Backend Function (Zero-Dependency Version)
 
 const SYSTEM_INSTRUCTION = `
 You are "AFA Bot", the elite AI growth consultant for AFA Media.
@@ -47,18 +47,27 @@ Constraints:
 // Helper to call the Netlify Backend
 const callBackendAI = async (payload: any) => {
   try {
+    // Call the local Netlify function relative path
     const response = await fetch('/.netlify/functions/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Server Error: ${response.status}`);
+    // Check if response is JSON (successful) or HTML (error page like 502/404)
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+       const text = await response.text();
+       console.error("Received non-JSON response:", text);
+       throw new Error(`Server Error (${response.status}): The AI system is rebooting (Bad Gateway). Please try again in 5 seconds.`);
     }
 
     const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Server Error: ${response.status}`);
+    }
+
     return data.text;
   } catch (error: any) {
     console.error("AI Service Error:", error);
@@ -72,7 +81,6 @@ export const sendMessageToGemini = async (
   imageData?: { mimeType: string, data: string }
 ): Promise<string> => {
   try {
-    // Call the backend function
     return await callBackendAI({
       endpointType: 'chat',
       history,
@@ -82,7 +90,7 @@ export const sendMessageToGemini = async (
     });
   } catch (error: any) {
     console.error("Chat Error:", error);
-    return `SYSTEM ALERT: Connection to mainframe failed. (${error.message || "Unknown Error"})`;
+    return `System Alert: ${error.message || "Connection failed. Please check your network."}`;
   }
 };
 
@@ -105,7 +113,7 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       Service Name|Short futuristic explanation why.
     `;
 
-    // Call the backend function
+    // Call the backend function with endpointType or direct prompt
     const text = await callBackendAI({
       endpointType: 'recommendation',
       prompt
@@ -126,7 +134,7 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
     console.error("Recommendation Error:", error);
     return { 
       service: "System Offline", 
-      reason: `Diagnosis failed: ${error.message || "Check API Key"}` 
+      reason: `Diagnosis failed: ${error.message || "Please retry."}` 
     };
   }
 };
