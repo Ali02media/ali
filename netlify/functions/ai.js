@@ -1,5 +1,8 @@
 
 export const handler = async (event, context) => {
+  // Log start of execution to debug connection
+  console.log("AI Function: Received request", event.httpMethod);
+
   // 1. Handle CORS Preflight
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -13,11 +16,12 @@ export const handler = async (event, context) => {
 
   // 2. Only allow POST
   if (event.httpMethod !== "POST") {
+    console.warn("AI Function: Method Not Allowed", event.httpMethod);
     return { statusCode: 405, headers, body: "Method Not Allowed" };
   }
 
   try {
-    // 3. Get API Key (Checks both names to be safe)
+    // 3. Get API Key
     const apiKey = process.env.API_KEY || process.env.GOOGLE_API_KEY;
 
     if (!apiKey) {
@@ -38,13 +42,15 @@ export const handler = async (event, context) => {
     try {
       requestBody = JSON.parse(event.body);
     } catch (e) {
+      console.error("AI Function: Invalid JSON body");
       return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
     }
 
     const { endpointType, systemInstruction, prompt, history, message, image } = requestBody;
 
     // 5. Construct Gemini Request
-    const model = 'gemini-1.5-flash';
+    // UPDATED: Using gemini-2.5-flash as 1.5-flash is returning "Not Found"
+    const model = 'gemini-2.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     let contents = [];
@@ -96,6 +102,7 @@ export const handler = async (event, context) => {
     }
 
     // 6. Call Google API
+    // Using native fetch (supported in Node 18/20 defined in netlify.toml)
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
