@@ -15,9 +15,6 @@ const getGenAIClient = () => {
   if (!apiKey) {
     console.error("CRITICAL: API Key is empty in getGenAIClient");
     throw new Error("API Key is missing. Please check Netlify settings.");
-  } else {
-    // Log first 4 chars only for safety check
-    console.log("AI Client Initializing with Key starting:", apiKey.substring(0, 4) + "...");
   }
 
   return new GoogleGenAI({ apiKey: apiKey });
@@ -126,8 +123,8 @@ export const sendMessageToGemini = async (
     console.error("Gemini Error Detail:", error);
     
     // Detailed Error Reporting for the User
-    if (error.message.includes("API Key") || error.message.includes("403")) {
-       return `SYSTEM ERROR: API Key Invalid. Google Refused Connection. (Error: ${error.message})`;
+    if (error.message.includes("403") || error.message.includes("API Key")) {
+       return `ACCESS DENIED: Google blocked the connection (403). CHECK GOOGLE CLOUD CONSOLE -> API Credentials -> Application Restrictions. You must allow this Netlify domain.`;
     }
     if (error.message.includes("429")) {
         return "SYSTEM ALERT: Traffic Overload. Please wait 10 seconds.";
@@ -182,6 +179,14 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
 
   } catch (error: any) {
     console.error("Recommendation Error:", error);
+    
+    if (error.message.includes("403")) {
+       return { 
+         service: "Access Denied", 
+         reason: "Google Cloud API Key is restricted. Add this domain to 'Application Restrictions' in Google Console." 
+       };
+    }
+    
     return { 
       service: "System Offline", 
       reason: `Diagnosis failed: ${error.message || "Unknown Error"}. Check API Key.` 
