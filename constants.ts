@@ -91,7 +91,8 @@ export const SOLUTIONS: FeatureItem[] = [
   {
     title: "AI-Powered Sentience",
     description: "Websites that talk back. We integrate custom AI Agents that understand context, answer queries, and qualify leads 24/7 while you sleep.",
-    icon: Bot
+    icon: Bot,
+    badge: "NEW"
   },
   {
     title: "Psycho-Emotive Resonance",

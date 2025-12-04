@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Sparkles, CheckCircle2, ArrowRight, Menu, X, Quote, ExternalLink, Mail } from 'lucide-react';
 import ParticlesBackground from './components/ParticlesBackground';
-import AIChatWidget from './components/AIChatWidget';
 import Button from './components/Button';
 import ServiceModal from './components/ServiceModal';
-import AIRecommender from './components/AIRecommender';
 import ScrollReveal from './components/ScrollReveal';
 import CustomCursor from './components/CustomCursor';
 import ProcessTimeline from './components/ProcessTimeline';
@@ -374,7 +372,12 @@ const App: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-24">
             {SOLUTIONS.map((item, i) => (
               <ScrollReveal key={i} delay={i * 150} className="h-full">
-                <div className="glass-panel p-6 md:p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-neon-blue/20 h-full">
+                <div className="glass-panel p-6 md:p-8 rounded-2xl hover:bg-white/5 transition-all duration-300 group border-neon-blue/20 h-full relative overflow-hidden">
+                  {item.badge && (
+                    <div className="absolute top-4 right-4 bg-neon-blue text-black text-[10px] font-bold px-2 py-0.5 rounded shadow-[0_0_10px_#00f3ff] animate-pulse">
+                      {item.badge}
+                    </div>
+                  )}
                   <div className="w-12 h-12 bg-neon-blue/10 rounded-lg flex items-center justify-center mb-6 text-neon-blue group-hover:scale-110 transition-all shadow-[0_0_15px_rgba(0,243,255,0.2)]">
                     <item.icon size={24} />
                   </div>
@@ -408,11 +411,6 @@ const App: React.FC = () => {
               <h3 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6">Choose Your Weapon</h3>
               <p className="text-gray-400 max-w-xl mx-auto text-sm md:text-base">Modular growth systems designed to integrate seamlessly with your business.</p>
             </div>
-          </ScrollReveal>
-
-          {/* AI Recommender Integration */}
-          <ScrollReveal className="w-full mb-12">
-             <AIRecommender />
           </ScrollReveal>
 
           {/* Podium Grid Layout */}
@@ -680,9 +678,6 @@ const App: React.FC = () => {
             </div>
         </div>
       </footer>
-
-      {/* AI Widget */}
-      <AIChatWidget />
     </div>
   );
 };

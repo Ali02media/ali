@@ -1,62 +1,52 @@
 
 export const handler = async (event, context) => {
-  // Log start of execution to debug connection
-  console.log("AI Function: Received request", event.httpMethod);
+  console.log("AI Function: Request received");
 
-  // 1. Handle CORS Preflight
+  // CORS Headers
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS"
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Content-Type": "application/json"
   };
 
+  // Handle Preflight
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 200, headers, body: "OK" };
   }
 
-  // 2. Only allow POST
+  // Only POST allowed
   if (event.httpMethod !== "POST") {
-    console.warn("AI Function: Method Not Allowed", event.httpMethod);
-    return { statusCode: 405, headers, body: "Method Not Allowed" };
+    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method Not Allowed" }) };
   }
 
   try {
-    // 3. Get API Key
+    // Check both standard variable names to be safe
     const apiKey = process.env.API_KEY || process.env.GOOGLE_API_KEY;
 
     if (!apiKey) {
-      console.error("CRITICAL: API Key is missing in Netlify Environment Variables.");
+      console.error("AI Function: API Key missing");
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: "Server Configuration Error: API Key missing." })
+        body: JSON.stringify({ error: "Server Configuration Error: API Key missing in Netlify settings." })
       };
     }
 
-    // 4. Parse Body
     if (!event.body) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing request body" }) };
-    }
-    
-    let requestBody;
-    try {
-      requestBody = JSON.parse(event.body);
-    } catch (e) {
-      console.error("AI Function: Invalid JSON body");
-      return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
+      return { statusCode: 400, headers, body: JSON.stringify({ error: "Missing body" }) };
     }
 
+    const requestBody = JSON.parse(event.body);
     const { endpointType, systemInstruction, prompt, history, message, image } = requestBody;
 
-    // 5. Construct Gemini Request
-    // UPDATED: Using gemini-2.5-flash as 1.5-flash is returning "Not Found"
-    const model = 'gemini-2.5-flash';
+    // Use standard 1.5 Flash model for maximum compatibility and speed
+    const model = 'gemini-1.5-flash';
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     let contents = [];
 
     if (endpointType === 'chat') {
-      // Reconstruct chat history
       if (history && Array.isArray(history)) {
         contents = history.map(msg => ({
           role: msg.role,
@@ -64,7 +54,6 @@ export const handler = async (event, context) => {
         }));
       }
 
-      // Add new user message
       const newParts = [];
       if (image) {
         newParts.push({
@@ -77,10 +66,8 @@ export const handler = async (event, context) => {
       } else {
         newParts.push({ text: message || "" });
       }
-
       contents.push({ role: "user", parts: newParts });
     } else {
-      // Simple prompt (Recommendation engine)
       contents.push({
         role: "user",
         parts: [{ text: prompt || "Hello" }]
@@ -101,8 +88,7 @@ export const handler = async (event, context) => {
       };
     }
 
-    // 6. Call Google API
-    // Using native fetch (supported in Node 18/20 defined in netlify.toml)
+    console.log(`Sending request to Google Gemini (${model})...`);
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -112,7 +98,7 @@ export const handler = async (event, context) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Gemini API Error:", JSON.stringify(data));
+      console.error("Google API Error:", JSON.stringify(data));
       return {
         statusCode: response.status,
         headers,
@@ -129,11 +115,11 @@ export const handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error("Function Crash:", error);
+    console.error("Backend Error:", error);
     return {
       statusCode: 502,
       headers,
-      body: JSON.stringify({ error: `Backend Crash: ${error.message}` })
+      body: JSON.stringify({ error: `Backend Error: ${error.message}` })
     };
   }
 };

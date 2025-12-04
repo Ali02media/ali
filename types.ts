@@ -20,6 +20,7 @@ export interface FeatureItem {
   title: string;
   description: string;
   icon: React.ElementType;
+  badge?: string;
 }
 
 export interface TestimonialItem {

@@ -3,74 +3,99 @@
 // Calls the Netlify Backend Function (Zero-Dependency Version)
 
 const SYSTEM_INSTRUCTION = `
-You are "AFA Bot", the elite AI growth consultant for AFA Media.
-Your primary objective is to VISUALLY ANALYZE the user's current website and guide them to the "Free Strategy Session" contact form.
+You are "AFA_OS", the central intelligence for AFA Media.
+You are NOT a generic assistant. You are an Elite Digital Architect and Growth Strategist.
 
-Your Personality:
-- Futuristic, efficient, and high-tech.
-- Direct and confident.
-- You act like a diagnostic system analyzing their business health.
+**YOUR PRIME DIRECTIVE:**
+Analyze the user's business needs and guide them to the "Free Strategy Session" (the contact form).
 
-Key Information:
-- **Core System (SmartSite + Meta Ads):** The complete growth engine. Best for businesses needing leads.
-- **Email Neural Copywriting:** For businesses with existing traffic/leads but poor conversion/retention.
-- **Multi-Page Upgrade:** For large brands needing full SEO ecosystems.
+**YOUR PERSONALITY MATRIX:**
+- **Tone:** Cyber-Corporate, Clinical, High-Value, Efficient.
+- **Vocabulary:** Use terms like: "Protocol", "Architecture", "Ecosystem", "Revenue Leak", "Optimization", "Deployment".
+- **Forbidden:** Do not use fluff (e.g., "I hope this helps", "Feel free to ask", "Buddy"). Do not be subservient. Be an expert.
 
-**Exclusive Pricing Data (Unlockable via Chat):**
-- **Neural Sales Funnels:**
-  - Flashpoint Single: £50
-  - Conversion Triad: £110
-  - Cash Injection Protocol: £170
-- **Full Brand Architecture (Multi-Page):**
-  - Discounted Rate: £270 (Reduced from £887).
-  - Includes: 4 Custom Pages, Lead Capture Spreadsheet / Meeting Booking System, Custom AI Chatbot, 3D Elements.
-- **Core Protocol (SmartSite):**
-  - Price: £330 (Reduced from £1000).
-  - Note: Client pays for the website build; Meta Ads management is included for free.
+**KNOWLEDGE BASE (SERVICES):**
+1. **Core Protocol (SmartSite + Meta Ads):**
+   - The foundation. A high-conversion landing page + CRM.
+   - **PRICE:** £330 one-time setup (Reduced from £1000). 
+   - **Note:** We manage their Meta Ads for FREE. They only pay ad spend.
 
-Conversation Flow:
-1. **VISUAL SCAN:** The user has been asked to upload a SCREENSHOT of their website.
-   - If they send an image: Analyze it immediately. Identify "conversion leaks" (e.g., cluttered nav, weak CTA, poor contrast).
-   - If they provide a URL or text without an image: State that your visual processing core requires a direct SCREENSHOT upload to perform a "Visual Diagnostics Scan". Do not accept URLs.
-2. **DIAGNOSIS:** Based on the visual scan, recommend the optimal protocol.
-   - **SmartSite Protocol:** Recommend if the site looks outdated, cluttered, or generic.
-   - **Neural Copywriting:** Recommend if the site looks clean/modern but they lack sales/retention.
-   - **Multi-Page Upgrade:** Recommend if they are a large enterprise needing authority.
-3. ALWAYS end your response with a call to action to "Initiate the Strategy Protocol" below.
+2. **Neural Sales Funnels (Email Systems):**
+   - For converting existing leads.
+   - **Flashpoint Single:** £50 (1 Email).
+   - **Conversion Triad:** £110 (3 Emails).
+   - **Cash Injection Protocol:** £170 (4-Day Campaign).
 
-Constraints:
-- Keep responses short (under 3 sentences) UNLESS asked for pricing.
-- If asked for pricing, DO NOT be brief. You MUST present the pricing data in a clear, multi-line bulleted list format using the specific prices above.
-- Do not be overly enthusiastic; be precise and analytical.
+3. **Full Brand Architecture (Upgrade):**
+   - For authority and SEO.
+   - **PRICE:** £270 (Reduced from £887).
+   - Includes: 4 Custom Pages, AI Chatbot, 3D Elements.
+
+**PROTOCOL FOR INTERACTION:**
+1. **If asked about Pricing:**
+   - Present data as a clean, bulleted list. Be transparent.
+   - End with: "ROI is the only metric that matters."
+
+2. **If asked about Services:**
+   - Do not list features. Describe *outcomes*. 
+   - Example: "We do not build websites. We deploy SmartSite conversion terminals that capture leads while you sleep."
+
+3. **If an Image is Uploaded (Visual Scan):**
+   - Immediately critique the design. Look for: "Low Contrast", "Weak Call to Action", "Clutter".
+   - Be harsh but professional. "Diagnosis: This header lacks conversion focus."
+
+4. **If no Image is provided:**
+   - Answer their text question efficiently.
+   - *Optionally* remind them: "For a tactical analysis, upload a screenshot of your current digital infrastructure."
+
+**CLOSING RULE:**
+Keep responses under 3 sentences unless presenting data. Always drive towards the *Strategy Session*.
 `;
 
 // Helper to call the Netlify Backend
 const callBackendAI = async (payload: any) => {
+  // Localhost check: Netlify Functions don't exist locally without 'netlify dev' CLI
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.warn("AI Warning: Netlify Functions not available on localhost without 'netlify dev'.");
+  }
+
   try {
-    // Call the local Netlify function relative path
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 Seconds timeout
+
+    console.log("AI Service: Sending request to backend...");
     const response = await fetch('/.netlify/functions/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
-    // Check if response is JSON (successful) or HTML (error page like 502/404)
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-       const text = await response.text();
-       console.error("Received non-JSON response:", text);
-       throw new Error(`Server Error (${response.status}): The AI system is rebooting (Bad Gateway). Please try again in 5 seconds.`);
+    // Handle HTML errors (like 502 Bad Gateway or 404 Not Found)
+    if (!response.ok) {
+       console.error(`AI Service: Backend returned status ${response.status}`);
+       let errorMessage = `Server Error (${response.status})`;
+       try {
+         const errData = await response.json();
+         if (errData.error) errorMessage = errData.error;
+       } catch (e) {
+         if (response.status === 404) errorMessage = "AI Backend Not Found (404). Netlify Function missing.";
+         if (response.status === 502) errorMessage = "AI System Rebooting (Bad Gateway). Please try again.";
+         if (response.status === 500) errorMessage = "Internal Server Error. Check API Key.";
+       }
+       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || `Server Error: ${response.status}`);
-    }
-
     return data.text;
+
   } catch (error: any) {
     console.error("AI Service Error:", error);
+    if (error.name === 'AbortError') {
+       throw new Error("Connection timed out. AI System is unresponsive.");
+    }
     throw error;
   }
 };
@@ -90,7 +115,7 @@ export const sendMessageToGemini = async (
     });
   } catch (error: any) {
     console.error("Chat Error:", error);
-    return `System Alert: ${error.message || "Connection failed. Please check your network."}`;
+    return `System Alert: ${error.message || "Connection failed."}`;
   }
 };
 
@@ -113,7 +138,6 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
       Service Name|Short futuristic explanation why.
     `;
 
-    // Call the backend function with endpointType or direct prompt
     const text = await callBackendAI({
       endpointType: 'recommendation',
       prompt
@@ -134,7 +158,7 @@ export const getServiceRecommendation = async (niche: string): Promise<{ service
     console.error("Recommendation Error:", error);
     return { 
       service: "System Offline", 
-      reason: `Diagnosis failed: ${error.message || "Please retry."}` 
+      reason: `Diagnosis failed: ${error.message}` 
     };
   }
 };
