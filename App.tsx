@@ -182,6 +182,8 @@ const App: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         console.log("Simulated Form Submission:", formData);
         setFormStatus('success');
+        // Update URL to include /success
+        window.history.pushState(null, '', '/success');
         setShowThankYou(true); // Trigger Modal
         setFormData({ name: '', email: '', url: '', phone: '', message: '' });
         setTouched({});
@@ -189,7 +191,6 @@ const App: React.FC = () => {
       }
 
       // Create FormData for Google Apps Script (no-cors compatible)
-      // We explicitly handle optional fields to ensure they are sent as empty strings if undefined
       const data = new FormData();
       data.append('name', formData.name.trim());
       data.append('email', formData.email.trim());
@@ -204,6 +205,8 @@ const App: React.FC = () => {
       });
 
       setFormStatus('success');
+      // Update URL to include /success
+      window.history.pushState(null, '', '/success');
       setShowThankYou(true); // Trigger Modal
       setFormData({ name: '', email: '', url: '', phone: '', message: '' });
       setTouched({});
@@ -216,6 +219,8 @@ const App: React.FC = () => {
   const handleCloseThankYou = () => {
     setShowThankYou(false);
     setFormStatus('idle'); // Reset form so they can submit again if needed
+    // Revert URL when closing the success modal
+    window.history.pushState(null, '', '/');
   };
 
   // Reorder services for podium effect: Addon (Left), Core (Center/Top), Upgrade (Right)
@@ -248,7 +253,10 @@ const App: React.FC = () => {
       />
       <BookingSuccessModal 
         isOpen={showBookingSuccess}
-        onClose={() => setShowBookingSuccess(false)}
+        onClose={() => {
+          setShowBookingSuccess(false);
+          window.history.pushState(null, '', '/');
+        }}
       />
       
       {/* Navigation */}
