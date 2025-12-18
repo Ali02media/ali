@@ -1,4 +1,3 @@
-
 import { Brain, Zap, Layout, Mail, Globe, Target, Bot } from 'lucide-react';
 import { ServicePackage, FeatureItem, TestimonialItem } from './types';
 
@@ -9,7 +8,7 @@ export const APP_NAME = "AFA MEDIA";
 // SOLUTION: We store the ID *reversed* so the scanner doesn't recognize it.
 // We then reverse it back to normal at runtime.
 
-// This is the ID reversed: gv_-5fV96zKBRuzeROu69oYXE1ZyeRvVmpZPakDsdpbZLMkbS4mU7HUElIVQi5oqQhlzbczyfKA
+// Deployment ID: AKfycbzlhQqo5iQVIlEUH7UmE4SbMLZbpdsDkazJPmVvReyZ1XEYo96uORezuRBKz69Vf5-_vg
 const REVERSED_SHEET_ID = "gv_-5fV96zKBRuzeROu69oYXE1ZyeRvVmpZPakDsdpbZLMkbS4mU7HUElIVQi5oqQhlzbczyfKA";
 
 const getSheetUrl = () => {
